@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:wd-integration="http://www.mulesoft.org/schema/mule/wd-integration" xmlns:wd-staffing="http://www.mulesoft.org/schema/mule/wd-staffing" xmlns:wd-hr="http://www.mulesoft.org/schema/mule/wd-hr" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd-hr/current/mule-wd-hr.xsd
+http://www.mulesoft.org/schema/mule/wd-staffing http://www.mulesoft.org/schema/mule/wd-staffing/current/mule-wd-staffing.xsd
+http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schema/mule/wd-integration/current/mule-wd-integration.xsd">
+	
+
+	<context:property-placeholder location="mule.${mule.env}.properties, common.properties"  />
+	<spring:beans>
+        <spring:bean id="PollSynchronizer" name="PollSynchronizer" class="org.mule.templates.concurrent.PollSynchronizer" scope="singleton"/>
+    </spring:beans>
+    
+    <sfdc:config name="Salesforce" username="${sfdc.username}" password="${sfdc.password}" securityToken="${sfdc.securityToken}" url="${sfdc.url}" doc:name="Salesforce" doc:description="The SalesForce instance where the updates and creations are migrated to.">
+        <sfdc:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/>
+    </sfdc:config>
+    <wd-hr:config name="WorkdayHumanResource" hrUser="${wday.user}" hrPassword="${wday.password}" hrEndpoint="${wday.endpoint}" doc:name="Workday Human Resource">
+        <wd-hr:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/>
+    </wd-hr:config>
+    <wd-staffing:config name="Workday_Staffing" doc:name="Workday Staffing" staffingEndpoint="${wday.endpoint}" staffingPassword="${wday.password}" staffingUser="${wday.user}">
+        <wd-staffing:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/>
+    </wd-staffing:config>
+    <wd-integration:config name="Workday_Integrations" integrationUser="${wday.user}" integrationPassword="${wday.password}" integrationEndpoint="${wday.endpoint}" doc:name="Workday Integrations">
+        <wd-integration:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/>
+    </wd-integration:config>
+    
+</mule>

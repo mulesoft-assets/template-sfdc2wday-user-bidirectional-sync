@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:wd-hr="http://www.mulesoft.org/schema/mule/wd-hr" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:wd-staffing="http://www.mulesoft.org/schema/mule/wd-staffing" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/wd-staffing http://www.mulesoft.org/schema/mule/wd-staffing/current/mule-wd-staffing.xsd
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
+http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd-hr/current/mule-wd-hr.xsd">
+	<data-mapper:config name="pojo_to_hireemployeerequesttype" transformationGraphPath="pojo_to_hireemployeerequesttype.grf" doc:name="DataMapper"/>
+    <data-mapper:config name="EmployeeType_To_TerminateEmployeeRequestType" transformationGraphPath="employeetype_to_terminateemployeerequesttype.grf" doc:name="DataMapper"/>
+    
+	<sub-flow name="upsertUserInSalesforceFlow" doc:name="upsertUserInSalesforceFlow">
+         <sfdc:upsert config-ref="Salesforce" externalIdFieldName="Id" type="User" doc:name="Upsert user in Salesforce">
+             <sfdc:objects ref="#[payload]"/>
+         </sfdc:upsert>
+        <logger level="INFO" message="Update User in Salesforce result: #[payload]" doc:name="Logger"/>
+    </sub-flow>
+
+    
+    <sub-flow name="queryUserFromSalesforceFlow" doc:name="queryUserFromSalesforceFlow">
+        <sfdc:query-single config-ref="Salesforce" query="SELECT Id, Email, FirstName, LastName, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, CommunityNickname FROM User WHERE Email = '#[payload['Email']]'" doc:name="Query user from Salesforce"/>
+        <logger level="INFO" message="Query user from A result: #[payload]" doc:name="Logger"/>
+    </sub-flow>
+
+    <sub-flow name="deleteUserFromSalesforceFlow" doc:name="deleteUserFromSalesforceFlow">
+        <sfdc:delete config-ref="Salesforce" doc:name="Delete user from Salesforce">
+            <sfdc:ids ref="#[payload]"/>
+        </sfdc:delete>
+    </sub-flow>
+    <sub-flow name="hireEmployeeFlow" doc:name="hireEmployeeFlow">
+        <data-mapper:transform config-ref="pojo_to_hireemployeerequesttype" doc:name="Employee To HireEmployeeRequestType"/>
+        <wd-staffing:hire-employee config-ref="Workday_Staffing" doc:name="Workday Staffing"/>
+    </sub-flow>
+    <sub-flow name="terminateWorkdayEmployeeFlow" doc:name="terminateWorkdayEmployeeFlow">
+        <wd-staffing:terminate-employee config-ref="Workday_Staffing" doc:name="Workday Staffing"/>
+    </sub-flow>
+    <sub-flow name="queryWorkdayEmployeeFlow" doc:name="queryWorkdayEmployeeFlow">
+        <wd-hr:get-employee config-ref="WorkdayHumanResource" doc:name="Workday Human Resource"/>
+    </sub-flow>
+    <sub-flow name="getWorkdaytoTerminateFlow" doc:name="getWorkdaytoTerminateFlow">
+        <wd-hr:get-employee config-ref="WorkdayHumanResource" doc:name="Workday Human Resource"/>
+        <data-mapper:transform config-ref="EmployeeType_To_TerminateEmployeeRequestType" doc:name="EmployeeType To TerminateEmployeeRequestType"/>
+    </sub-flow>
+
+
+</mule>
