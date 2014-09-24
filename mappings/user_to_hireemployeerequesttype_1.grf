@@ -4151,6 +4151,14 @@
 <Dictionary>
 <Entry id="DictionaryEntry0" input="true" name="inputPayload" output="false" type="object"/>
 <Entry id="DictionaryEntry1" input="false" name="outputPayload" output="true" type="object"/>
+<Entry dictval.__javaType="java.lang.String" id="DictionaryEntry2" input="true" name="country" output="false" type="string"/>
+<Entry dictval.__javaType="java.lang.String" id="DictionaryEntry3" input="true" name="city" output="false" type="string"/>
+<Entry dictval.__javaType="java.lang.String" id="DictionaryEntry4" input="true" name="postalCode" output="false" type="string"/>
+<Entry dictval.__javaType="java.lang.String" id="DictionaryEntry5" input="true" name="currency" output="false" type="string"/>
+<Entry dictval.__javaType="java.lang.String" id="DictionaryEntry6" input="true" name="state" output="false" type="string"/>
+<Entry dictval.__javaType="java.lang.String" id="DictionaryEntry7" input="true" name="location" output="false" type="string"/>
+<Entry dictval.__javaType="java.lang.String" id="DictionaryEntry8" input="true" name="organization" output="false" type="string"/>
+<Entry dictval.__javaType="java.lang.String" id="DictionaryEntry9" input="true" name="jobprofile" output="false" type="string"/>
 </Dictionary>
 </Global>
 <Phase number="0">
@@ -7583,9 +7591,9 @@
 output.__id = input.__id;
 output.__parent_id = input.__id;
 //END -> DO NOT REMOVE
-output.postalCode = (isnull(input.PostalCode) ? "90001" : input.PostalCode);
+output.postalCode = (isnull(input.PostalCode) ? inputArguments.postalCode : input.PostalCode);
 output.effectiveDate = (isnull(input.CreatedDate) ? null : str2calendar(input.CreatedDate,"yyyy-MM-dd"));
-output.municipality = (isnull(input.City) ? "California" : input.City);
+output.municipality = (isnull(input.City) ? inputArguments.city : input.City);
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'addressLineData'" guiX="460" guiY="320" id="FOREACH_USER_ADDRESS_LINE_DATA" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
@@ -7621,7 +7629,7 @@ output.__id = input.__id;
 output.__parent_id = input.__id;
 //END -> DO NOT REMOVE
 output.type = "ISO_3166-1_Alpha-3_Code";
-output.value = "USA";]]></attr>
+output.value = inputArguments.country;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'ID'" guiX="460" guiY="520" id="FOREACH_USER_ID1" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
 <attr name="melScript"><![CDATA[//MEL
@@ -7666,7 +7674,7 @@ output.__id = input.__id;
 output.__parent_id = input.__id;
 //END -> DO NOT REMOVE
 output.type = "ISO_3166-1_Alpha-3_Code";
-output.value = "USA";]]></attr>
+output.value = inputArguments.country;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'ID'" guiX="460" guiY="2720" id="FOREACH_USER_ID14" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
 <attr name="melScript"><![CDATA[//MEL
@@ -7693,7 +7701,7 @@ output.__id = input.__id;
 output.__parent_id = input.__id;
 //END -> DO NOT REMOVE
 output.type = "Currency_ID";
-output.value = "USD";]]></attr>
+output.value = inputArguments.currency;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'ID'" guiX="460" guiY="720" id="FOREACH_USER_ID2" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
 <attr name="melScript"><![CDATA[//MEL
@@ -7702,7 +7710,7 @@ output.__id = input.__id;
 output.__parent_id = input.__id;
 //END -> DO NOT REMOVE
 output.type = "Country_Region_ID";
-output.value = "USA-CA";]]></attr>
+output.value = inputArguments.state;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'ID'" guiX="460" guiY="820" id="FOREACH_USER_ID3" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
 <attr name="melScript"><![CDATA[//MEL
@@ -7729,7 +7737,7 @@ output.__id = input.__id;
 output.__parent_id = input.__id;
 //END -> DO NOT REMOVE
 output.type = "Location_ID";
-output.value = "San_Francisco_Site";]]></attr>
+output.value = inputArguments.location;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'ID'" guiX="460" guiY="1520" id="FOREACH_USER_ID6" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
 <attr name="melScript"><![CDATA[//MEL
@@ -7738,7 +7746,7 @@ output.__id = input.__id;
 output.__parent_id = input.__id;
 //END -> DO NOT REMOVE
 output.type = "Organization_Reference_ID";
-output.value = "SUPERVISORY_ORGANIZATION-6-235";]]></attr>
+output.value = inputArguments.organization;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'ID'" guiX="460" guiY="1620" id="FOREACH_USER_ID7" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
 <attr name="melScript"><![CDATA[//MEL
@@ -7747,7 +7755,7 @@ output.__id = input.__id;
 output.__parent_id = input.__id;
 //END -> DO NOT REMOVE
 output.type = "Job_Profile_ID";
-output.value = "39905";]]></attr>
+output.value = inputArguments.jobprofile;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'ID'" guiX="460" guiY="1720" id="FOREACH_USER_ID8" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
 <attr name="melScript"><![CDATA[//MEL

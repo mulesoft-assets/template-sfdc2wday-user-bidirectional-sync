@@ -22,10 +22,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,6 +57,8 @@ import com.workday.staffing.TerminateEventDataType;
 @SuppressWarnings("unchecked")
 public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 
+	private static String WORKDAY_MANAGER_ID;
+	private static String WORKDAY_POSITION_ID;
 	private static final String INTEGRATION_ID = "Salesforce - Chatter";
 	private static final String TERMINATION_REASON_ID = "208082cd6b66443e801d95ffdc77461b";
 	private static final String VAR_ID = "Id";
@@ -69,7 +67,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	private static final String VAR_FIRST_NAME = "FirstName";
 	private static final String VAR_EMAIL = "Email";
 	private static String SFDC_PROFILE_ID;
-	private String EXT_ID, EMAIL = "bwillis@gmailtest.com", FIRST_NAME, lAST_NAME;
+	private String EXT_ID, EMAIL, LAST_NAME = "WorkdayWorker";
 	private Employee employee;
 	private static final String ANYPOINT_TEMPLATE_NAME = "userBiSync";
 	private static final String SALESFORCE_INBOUND_FLOW_NAME = "triggerSyncFromSalesforceFlow";
@@ -99,31 +97,24 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 			e.printStackTrace();
 		}
 	
+		WORKDAY_MANAGER_ID = props.getProperty("wday.manager.id");
+		WORKDAY_POSITION_ID = props.getProperty("wday.position.id");
+		
 		SFDC_PROFILE_ID = props.getProperty("sfdc.profileId");
 		
 		System.setProperty("page.size", "1000");
 
-		// Set polling frequency to 10 seconds
 		System.setProperty("poll.startDelayMillis", "8000");
-        System.setProperty("poll.frequencyMillis", "30000");
-
-		// Set default water-mark expression to current time
-		System.clearProperty("watermark.default.expression");
-		DateTime now = new DateTime(DateTimeZone.UTC);
-		DateTimeFormatter dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-//		System.setProperty("watermark.default.expression", now.toDate());
+        System.setProperty("poll.frequencyMillis", "15000");
 		
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		
+	public void setUp() throws Exception {		
 		stopAutomaticPollTriggering();
 		getAndInitializeFlows();
 
-		batchTestHelper = new BatchTestHelper(muleContext);
-		
-		createTestDataInWorkdaySandBox();
+		batchTestHelper = new BatchTestHelper(muleContext);			
 		createTestDataInSalesforceSandbox();
 	}
 
@@ -142,7 +133,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		salesforceUser0.put("LanguageLocaleKey", "en_US");
 		salesforceUser0.put("CommunityNickname", "cn" + infixSalesforce);
 		createdUsersInSalesforce.add(salesforceUser0);
-
+		logger.info("creating salesforce user: " + salesforceUser0.get(VAR_EMAIL));
 		MuleEvent event = upsertUserInSalesforceFlow.process(getTestEvent(Collections.singletonList(salesforceUser0), MessageExchangePattern.REQUEST_RESPONSE));
 		salesforceUser0.put(VAR_ID, (((UpsertResult) ((List<?>) event.getMessage().getPayload()).get(0))).getId());
 		createdUsersInWorkday.add(salesforceUser0.get(VAR_ID).toString());
@@ -158,7 +149,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		upsertUserInSalesforceFlow = getSubFlow("upsertUserInSalesforceFlow");
 		upsertUserInSalesforceFlow.initialise();
 
-		// Flow for updating a user in Database
+		// Flow for updating a user in Workday
 		hireWorkdaEmployeeFlow = getSubFlow("hireEmployeeFlow");
 		hireWorkdaEmployeeFlow.initialise();
 
@@ -166,7 +157,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		queryUserFromSalesforceFlow = getSubFlow("queryUserFromSalesforceFlow");
 		queryUserFromSalesforceFlow.initialise();
 
-		// Flow for querying the user in Database
+		// Flow for querying the user in Workday
 		queryUserFromWorkdayFlow = getSubFlow("queryWorkdayEmployeeFlow");
 		queryUserFromWorkdayFlow.initialise();
 	}
@@ -183,9 +174,10 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
     
     private List<Employee> prepareNewHire(){
 		EXT_ID = "SFDC2Workday_" + System.currentTimeMillis();
+		EMAIL = "info" + System.currentTimeMillis() + "@test.com";
 		logger.info("employee name: " + EXT_ID);
-		employee = new Employee(EXT_ID, "Willis1", EMAIL, "650-232-2323", "999 Main St", "San Francisco", "CA", "94105", "US", "o7aHYfwG", 
-				"2014-04-17-07:00", "2014-04-21-07:00", "QA Engineer", "San_Francisco_site", "Regular", "Full Time", "Salary", "USD", "140000", "Annual", "39905", "21440", EXT_ID);
+		employee = new Employee(EXT_ID, LAST_NAME, EMAIL, "650-232-2323", "999 Main St", "San Francisco", "CA", "94105", "US", "o7aHYfwG", 
+				"2014-04-17-07:00", "2014-04-21-07:00", "QA Engineer", "San_Francisco_site", "Regular", "Full Time", "Salary", "USD", "140000", "Annual", WORKDAY_POSITION_ID, WORKDAY_MANAGER_ID, EXT_ID);
 		List<Employee> list = new ArrayList<Employee>();
 		list.add(employee);
 		createdUsersInWorkday.add(EXT_ID);
@@ -193,43 +185,45 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	}
     
 	@Test
-	public void testBothDirections() throws MuleException, Exception {
-		// test workday -> sfdc
-		Thread.sleep(20000);
-		
-		// Execution
-		executeWaitAndAssertBatchJob(WORKDAY_INBOUND_FLOW_NAME);
-
-		// Assertions		
-		Map<String, Object> workdayUser = new HashMap<String, Object>();
-		workdayUser.put(VAR_EMAIL, EMAIL);
-		workdayUser.put(VAR_FIRST_NAME, FIRST_NAME);
-		workdayUser.put(VAR_LAST_NAME, lAST_NAME);
-		Object object =  queryUser(workdayUser , queryUserFromSalesforceFlow);
-		Assert.assertFalse("Synchronized user should not be null payload", object instanceof NullPayload);
-		Map<String, Object> payload = (Map<String, Object>) object;
-		Assert.assertEquals("The user should have been sync and new name must match", workdayUser.get(VAR_FIRST_NAME), payload.get(VAR_FIRST_NAME));
-		Assert.assertEquals("The user should have been sync and new title must match", workdayUser.get(VAR_LAST_NAME), payload.get(VAR_LAST_NAME));
-		
+	public void testSalesforceDirection() throws MuleException, Exception {
 		// test sfdc -> workday	
-//		Thread.sleep(1001);
-
-		// Execution
-//		executeWaitAndAssertBatchJob(SALESFORCE_INBOUND_FLOW_NAME);
-
-		// FIXME above call does not wait for batch to complete
-//		Thread.sleep(10000);
+		Thread.sleep(1000);
+		executeWaitAndAssertBatchJob(SALESFORCE_INBOUND_FLOW_NAME);
 		
-		// Assertions
-//		EmployeeType worker = queryWorkdayUser(createdUsersInSalesforce.get(0).get(VAR_ID).toString(), queryUserFromWorkdayFlow);
-//		Assert.assertFalse("Synchronized user should not be null payload", worker == null);
-//		Assert.assertEquals("The user should have been sync and new name must match", createdUsersInSalesforce.get(0).get(VAR_FIRST_NAME), 
-//				worker.getEmployeeData().get(0).getPersonalInfoData().get(0).getPersonData().getNameData().get(0).getFirstName());
-//		Assert.assertEquals("The user should have been sync and new title must match", createdUsersInSalesforce.get(0).get(VAR_LAST_NAME), 
-//				worker.getEmployeeData().get(0).getPersonalInfoData().get(0).getPersonData().getNameData().get(0).getLastName().get(0).getValue());
-		
+		EmployeeType worker = queryWorkdayUser(createdUsersInSalesforce.get(0).get(VAR_ID).toString(), queryUserFromWorkdayFlow);
+		Assert.assertFalse("Synchronized user should not be null payload", worker == null);
+		Assert.assertEquals("The user should have been sync and new name must match", createdUsersInSalesforce.get(0).get(VAR_FIRST_NAME), 
+				worker.getEmployeeData().get(0).getPersonalInfoData().get(0).getPersonData().getNameData().get(0).getFirstName());
+		Assert.assertEquals("The user should have been sync and new title must match", createdUsersInSalesforce.get(0).get(VAR_LAST_NAME), 
+				worker.getEmployeeData().get(0).getPersonalInfoData().get(0).getPersonData().getNameData().get(0).getLastName().get(0).getValue());
+			
 	}
 
+	@Test
+	public void testWorkdayDirection() throws Exception{
+		// because of workday delay in processing, test data is created here
+		createTestDataInWorkdaySandBox();
+		// test workday -> sfdc
+		Thread.sleep(15000);
+		
+		executeWaitAndAssertBatchJob(WORKDAY_INBOUND_FLOW_NAME);
+
+		Map<String, Object> workdayUser = new HashMap<String, Object>();
+		workdayUser.put(VAR_EMAIL, EMAIL);
+		workdayUser.put(VAR_FIRST_NAME, EXT_ID);
+		workdayUser.put(VAR_LAST_NAME, LAST_NAME);
+		Object object =  queryUser(workdayUser , queryUserFromSalesforceFlow);
+		
+		Assert.assertFalse("Synchronized user should not be null payload", object instanceof NullPayload);
+		
+		Map<String, Object> payload = (Map<String, Object>) object;
+		
+		Assert.assertEquals("The user should have been sync and new name must match", workdayUser.get(VAR_FIRST_NAME), payload.get(VAR_FIRST_NAME));
+		Assert.assertEquals("The user should have been sync and new title must match", workdayUser.get(VAR_LAST_NAME), payload.get(VAR_LAST_NAME));
+		createdUsersInSalesforce.add(payload);
+	
+	}
+	
 	private EmployeeType queryWorkdayUser(String id,
 			InterceptingChainLifecycleWrapper queryUserFromWorkdayFlow2) {
 		try {
@@ -255,7 +249,6 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 
 		// Wait for the batch job execution to finish
 		batchTestHelper.awaitJobTermination(TIMEOUT_MILLIS * 1000, 500);
-//		batchTestHelper.assertJobWasSuccessful();
 	}
 	
 	@After
@@ -318,13 +311,17 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	}
 
 	private void deleteTestUsersFromSalesforce() throws InitialisationException, MuleException, Exception {
-		List<String> idList = new ArrayList<String>();
+		List<Map<String, Object>> idList = new ArrayList<Map<String, Object>>();
 		for (Map<String, Object> c : createdUsersInSalesforce) {
-			idList.add(c.get(VAR_ID).toString());
+			logger.info("deleting SFDC user: " + c.get(VAR_ID));			
+			Map<String, Object> entry = new HashMap<String, Object>();
+			entry.put("Id", c.get(VAR_ID));
+			entry.put("isActive", false);
+			idList.add(entry);
 		}
+		
 		SubflowInterceptingChainLifecycleWrapper deleteUserFromSalesforceFlow = getSubFlow("deleteUserFromSalesforceFlow");
 		deleteUserFromSalesforceFlow.initialise();
-		deleteUserFromSalesforceFlow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
+		deleteUserFromSalesforceFlow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));		
 	}
-
 }

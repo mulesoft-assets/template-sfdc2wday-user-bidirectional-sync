@@ -31,9 +31,10 @@ http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd
     </sub-flow>
 
     <sub-flow name="deleteUserFromSalesforceFlow" doc:name="deleteUserFromSalesforceFlow">
-        <sfdc:delete config-ref="Salesforce" doc:name="Delete user from Salesforce">
-            <sfdc:ids ref="#[payload]"/>
-        </sfdc:delete>
+        <sfdc:update config-ref="Salesforce" type="User" doc:name="Salesforce">
+            <sfdc:objects ref="#[payload]"/>
+        </sfdc:update>
+
     </sub-flow>
     <sub-flow name="hireEmployeeFlow" doc:name="hireEmployeeFlow">
         <data-mapper:transform config-ref="pojo_to_hireemployeerequesttype" doc:name="Employee To HireEmployeeRequestType"/>

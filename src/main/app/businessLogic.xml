@@ -17,7 +17,6 @@ http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd
 http://www.mulesoft.org/schema/mule/wd-staffing http://www.mulesoft.org/schema/mule/wd-staffing/current/mule-wd-staffing.xsd
 http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schema/mule/wd-integration/current/mule-wd-integration.xsd" version="EE-3.5.0">
     <data-mapper:config name="User_To_EmployeePersonalInfoUpdateType" transformationGraphPath="user_to_employeepersonalinfoupdatetype.grf" doc:name="User_To_EmployeePersonalInfoUpdateType"/>
-    <data-mapper:config name="User_To_HireEmployeeRequestType" transformationGraphPath="user_to_hireemployeerequesttype.grf" doc:name="User_To_HireEmployeeRequestType"/>
     <data-mapper:config name="User_To_HireEmployeeRequestType_1" transformationGraphPath="user_to_hireemployeerequesttype_1.grf" doc:name="User_To_HireEmployeeRequestType_1"/>
 	<data-mapper:config name="List_WorkerType__To_List_User1" transformationGraphPath="list_workertype__to_user.grf" doc:name="List_WorkerType__To_User"/>
 	
@@ -41,7 +40,18 @@ http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schem
 
             </batch:step>
             <batch:step name="insertWorkerInWorkDay" accept-policy="ONLY_FAILURES">
-                <data-mapper:transform doc:name="User To HireEmployeeRequestType" config-ref="User_To_HireEmployeeRequestType_1"/>
+                <data-mapper:transform doc:name="User To HireEmployeeRequestType" config-ref="User_To_HireEmployeeRequestType_1">
+                    <data-mapper:input-arguments>
+                        <data-mapper:input-argument key="country">${wday.country}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="postalCode">${wday.postalCode}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="state">${wday.state}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="city">${wday.city}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="location">${wday.location}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="organization">${wday.organization}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="jobprofile">${wday.jobprofileId}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="currency">${wday.currency}</data-mapper:input-argument>
+                    </data-mapper:input-arguments>
+                </data-mapper:transform>
 
         		<wd-staffing:hire-employee config-ref="Workday_Staffing" doc:name="Workday Staffing"/>
             </batch:step>
@@ -64,7 +74,6 @@ http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schem
             <batch:step name="GetLastEvent">
                 <enricher source="payload" target="#[recordVars['lastEvent']]" doc:name="store the value in 'recordVars['lastEvent']'">
                     <processor-chain doc:name="Processor Chain">
-                        <logger message="bbbbb" level="INFO" doc:name="Logger"/>
                         <wd-integration:get-event-detail config-ref="Workday_Integrations" eventDetailRequest-ref="#[org.mule.kicks.EventDetailRequest.create(payload)]" doc:name="Query for the last event"/>
                         <custom-transformer class="org.mule.kicks.TransactionLogProcessor" doc:name="iterate through transaction logs"/>
                     </processor-chain>
@@ -98,7 +107,7 @@ http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schem
                     <sfdc:query-single config-ref="Salesforce" query="SELECT Id, Email, LastModifiedDate FROM User WHERE (Email = '#[payload['Email']]')" doc:name="query user from Salesforce"/>
                 </enricher>
                 <logger message="updating: #[recordVars['userInTargetInstance'] is NullPayload ? true : org.mule.templates.date.DateUtils.dateToDateTime(payload['LastModifiedDate']).isAfter(org.mule.templates.date.DateUtils.ISOStringDateToDateTime(recordVars['userInTargetInstance']['LastModifiedDate'])) &amp;&amp; '${wday.integration.user.id}' != payload.get('LastModifiedById')]" level="INFO" doc:name="Logger"/>
-                <logger message="intgid: #[payload.get('LastModifiedById')]" level="INFO" doc:name="Logger"/>
+                <logger message="isafter: org.mule.templates.date.DateUtils.dateToDateTime(payload['LastModifiedDate']).isAfter(org.mule.templates.date.DateUtils.ISOStringDateToDateTime(recordVars['userInTargetInstance']['LastModifiedDate']))" level="INFO" doc:name="Logger"/>
             </batch:step>
             <batch:step name="upsertUserInSalesforceStep" accept-expression="recordVars['userInTargetInstance'] is NullPayload ? true : org.mule.templates.date.DateUtils.dateToDateTime(payload['LastModifiedDate']).isAfter(org.mule.templates.date.DateUtils.ISOStringDateToDateTime(recordVars['userInTargetInstance']['LastModifiedDate'])) &amp;&amp; '${wday.integration.user.id}' != payload.get('LastModifiedById')">
 
