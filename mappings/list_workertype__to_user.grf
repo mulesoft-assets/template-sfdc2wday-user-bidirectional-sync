@@ -5852,6 +5852,9 @@
 <Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[1]/countryRegionReference[1]/ID[2]/value" containerType="SINGLE" label="StateRule" name="StateRule" type="string"/>
 <Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[1]/countryReference/ID[3]/value" containerType="SINGLE" label="CountryRule" name="CountryRule" type="string"/>
 <Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/emailAddressData[1]/emailAddress" containerType="SINGLE" label="EmailRule" name="EmailRule" type="string"/>
+<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[1]/addressLineData[1]/value" containerType="SINGLE" label="StreetRule" name="StreetRule" type="string"/>
+<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/phoneData[1]/phoneNumber" containerType="SINGLE" label="PhoneRule" name="PhoneRule" type="string"/>
+<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/phoneData[1]/phoneExtension" containerType="SINGLE" label="PhoneExtensionRule" name="PhoneExtensionRule" type="string"/>
 </Record>
 </Metadata>
 <Metadata __index="950" __referenceCounter="0" __sourcePath="{}/list/workerData/employmentData/positionData/businessSiteSummaryData/locationTypeReference" _dataStructure="SINGLE_DIMENSIONAL_COLLECTION" _id="__id" _metadataParentId="b3ebf008-7937-4034-b9c9-9ee6a682a170" _parent_id="__parent_id" _type="Input" id="6b495083-5a79-4be2-aae1-85afa45bb1bf">
@@ -7476,6 +7479,9 @@
   <Mapping cloverField="StateRule" trim="true" xpath="workerData/personalData/contactData/addressData[1]/countryRegionReference[1]/ID[2]/value"/>
   <Mapping cloverField="CountryRule" trim="true" xpath="workerData/personalData/contactData/addressData[1]/countryReference/ID[3]/value"/>
   <Mapping cloverField="EmailRule" trim="true" xpath="workerData/personalData/contactData/emailAddressData[1]/emailAddress"/>
+  <Mapping cloverField="StreetRule" trim="true" xpath="workerData/personalData/contactData/addressData[1]/addressLineData[1]/value"/>
+  <Mapping cloverField="PhoneRule" trim="true" xpath="workerData/personalData/contactData/phoneData[1]/phoneNumber"/>
+  <Mapping cloverField="PhoneExtensionRule" trim="true" xpath="workerData/personalData/contactData/phoneData[1]/phoneExtension"/>
 </Context>
 ]]></attr>
 <attr name="_data_format"><![CDATA[JAVA]]></attr>
@@ -11024,7 +11030,10 @@ output.City = input.CityRule;
 output.PostalCode = input.PostalCodeRule;
 output.State = input.StateRule;
 output.Country = input.CountryRule;
-output.Email = input.EmailRule;]]></attr>
+output.Email = input.EmailRule;
+output.Street = input.StreetRule;
+output.Phone = input.PhoneRule;
+output.Extension = input.PhoneExtensionRule;]]></attr>
 </Node>
 <Node cacheInMemory="true" enabled="enabled" fileURL="dict:outputPayload" guiName="Map&lt;k,v&gt; WRITER" guiX="900" guiY="20" id="MAP_WRITER0" type="MAP_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>

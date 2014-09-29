@@ -53,12 +53,12 @@ I want to have my users synchronized between Salesforce and Workday
 
 # Considerations <a name="considerations"/>
 
-**Note:** This particular Anypoint Template illustrate the synchronization use case between SalesForce and a Workday.					
-			There are a couple of things you should take into account before running this kick:
-			
+Salesforce Customization: It is necessary to add a custom field ExtId (Text 255) to Salesforce User. For more information, please see [Salesforce - Create Custom Fields](https://help.salesforce.com/HTViewHelpDoc?id=adding_fields.htm). **Note:** This particular Anypoint Template illustrate the synchronization use case between SalesForce and a Workday.					
+			There are a couple of things you should take into account before running this kick:			
 			1. **Users cannot be deleted in SalesForce:** For now, the only thing to do regarding users removal is disabling/deactivating them, but this won't make the username available for a new user.
 			2. **Each user needs to be associated to a Profile:** SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. Each SalesForce account has its own profiles. Check out the next section to define a map between Profile Ids (from the source account to the ones in the target account and the other way around).
 			3. **Workers cannot be deleted in Workday:** They are only set as terminated employees.
+			4. **Required Fields:** The following fields are required for synchronization at Salesforce instance: Street, City, State/Province, Zip/Postal Code, Country, Phone.
 
 
 
@@ -166,33 +166,33 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 ### Application configuration
 #### Properties to be used on the development environment
 
-			#### Workday Connector configuration
-			wday.user `user@company`
-			wday.password `secret`
-			wday.endpoint=https://impl-cc.workday.com/ccx/service/company/Human_Resources/v21.1
-			wday.integration.user.id `72d1073ba8f51050e3c83a48d7a9ead6`
-			wday.country `USA`
-			wday.state `USA-CA`
-			wday.organization`SUPERVISORY_ORGANIZATION-1-435`
-			wday.jobprofileId `39905`
-			wday.postalCode `90001`
-			wday.city `San Francisco`
-			wday.location `San_Francisco_Site`
-			wday.currency `USD`
-			
-			#### Salesforce Connector
-			sfdc.username `user@company.com`
-			sfdc.password `secret`
-			sfdc.securityToken `h0fcC2Y7dnuH7ELk9BhoW0xu`
-			sfdc.url `https://login.salesforce.com/services/Soap/u/30.0`
-			sfdc.integration.user.id `00520000003LtvGAAS`
-			sfdc.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000).format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZone.getTimeZone('GMT'))]`
-			sfdc.profileId `00e200000015oKFAAY`
-			
-			sfdc.localeSidKey=en_US
-			sfdc.languageLocaleKey=en_US
-			sfdc.timeZoneSidKey=America/New_York
-			sfdc.emailEncodingKey=ISO-8859-1
+#### Workday Connector configuration
++ wday.user `user@company`
++ wday.password `secret`
++ wday.endpoint=https://impl-cc.workday.com/ccx/service/company/Human_Resources/v21.1
++ wday.integration.user.id `72d1073ba8f51050e3c83a48d7a9ead6`
++ wday.country `USA`
++ wday.state `USA-CA`
++ wday.organization`SUPERVISORY_ORGANIZATION-1-435`
++ wday.jobprofileId `39905`
++ wday.postalCode `90001`
++ wday.city `San Francisco`
++ wday.location `San_Francisco_Site`
++ wday.currency `USD`
+
+#### Salesforce Connector
++ sfdc.username `user@company.com`
++ sfdc.password `secret`
++ sfdc.securityToken `h0fcC2Y7dnuH7ELk9BhoW0xu`
++ sfdc.url `https://login.salesforce.com/services/Soap/u/30.0`
++ sfdc.integration.user.id `00520000003LtvGAAS`
++ sfdc.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000).format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZone.getTimeZone('GMT'))]`
++ sfdc.profileId `00e200000015oKFAAY`
+
++ sfdc.localeSidKey=en_US
++ sfdc.languageLocaleKey=en_US
++ sfdc.timeZoneSidKey=America/New_York
++ sfdc.emailEncodingKey=ISO-8859-1
 
 # API Calls <a name="apicalls"/>
 Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint Template calls to the API can be calculated using the formula:

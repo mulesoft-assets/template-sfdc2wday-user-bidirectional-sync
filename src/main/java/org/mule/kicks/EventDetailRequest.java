@@ -15,19 +15,26 @@ public class EventDetailRequest {
 		if (data.getWorkerData().getTransactionLogEntryData().getTransactionLogEntry().isEmpty())
 			throw new IllegalArgumentException("No transaction logs to process.");
 		
+		GetEventDetailsRequestType get = prepareRequest(
+				data.getWorkerData().getTransactionLogEntryData().getTransactionLogEntry().get(0).getTransactionLogReference().getID().get(0).getType(),
+				data.getWorkerData().getTransactionLogEntryData().getTransactionLogEntry().get(0).getTransactionLogReference().getID().get(0).getValue());
+		return get ;
+	}
+
+	public static GetEventDetailsRequestType prepareRequest(String type, String value) {
 		GetEventDetailsRequestType get = new GetEventDetailsRequestType();
 		EventRequestReferencesType req = new EventRequestReferencesType();
 		List<ActionEventObjectType> eventReference = new ArrayList<ActionEventObjectType>();
 		ActionEventObjectType ot = new ActionEventObjectType();
 		List<ActionEventObjectIDType> list = new ArrayList<ActionEventObjectIDType>();
 		ActionEventObjectIDType e = new ActionEventObjectIDType();
-		e.setType(data.getWorkerData().getTransactionLogEntryData().getTransactionLogEntry().get(0).getTransactionLogReference().getID().get(0).getType());
-		e.setValue(data.getWorkerData().getTransactionLogEntryData().getTransactionLogEntry().get(0).getTransactionLogReference().getID().get(0).getValue());
+		e.setType(type);
+		e.setValue(value);
 		list.add(e );
 		ot.setID(list );
 		eventReference.add(ot );
 		req.setEventReference(eventReference );
 		get.setRequestReferences(req);
-		return get ;
+		return get;
 	}
 }

@@ -53,6 +53,9 @@ public class DateUtils {
 	 * @return true if the date A is after the date B
 	 */
 	public static boolean isAfter(String sfdcDate, String workdayDate) {
+		if (workdayDate == null){
+			return true;
+		}
 		Validate.notEmpty(sfdcDate, "The SFDC date should not be null or empty");
 		Validate.notEmpty(workdayDate, "The Workday date should not be null or empty");
 

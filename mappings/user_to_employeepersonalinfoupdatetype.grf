@@ -519,6 +519,7 @@
 <Field __implementationClass="java.lang.String" __index="1" __sourcePath="{}/User/UserRoleId" containerType="SINGLE" label="UserRoleId" name="UserRoleId" type="string"/>
 <Field __index="73" __sourcePath="{}/User/UserType" containerType="SINGLE" label="UserType" name="UserType" type="string"/>
 <Field __implementationClass="java.lang.String" __index="126" __sourcePath="{}/User/Username" containerType="SINGLE" label="Username" name="Username" type="string"/>
+<Field __sourcePath="{}/User/ExtId_x005f_x005fc" containerType="SINGLE" label="ExtId__c" name="ExtId__c" type="string"/>
 </Record>
 </Metadata>
 <Metadata __index="146" __referenceCounter="0" __sourcePath="{}/object/employeePersonalInfoData/personalInfoData/personData/visaIDData" _dataStructure="SINGLE_DIMENSIONAL_COLLECTION" _id="__id" _metadataParentId="e13f795d-3250-4c99-968c-58b8fec3465d" _parent_id="__parent_id" _type="Output" id="085d869c-dff6-4512-b769-b0ada3188978">
@@ -683,6 +684,7 @@
   <Mapping cloverField="UserRoleId" trim="true" xpath="UserRoleId"/>
   <Mapping cloverField="UserType" trim="true" xpath="UserType"/>
   <Mapping cloverField="Username" trim="true" xpath="Username"/>
+  <Mapping cloverField="ExtId__c" trim="true" xpath="ExtId_x005f_x005fc"/>
 </Context>
 ]]></attr>
 <attr name="__typeName"><![CDATA[User]]></attr>
@@ -1317,8 +1319,8 @@ output.countryISOCode = "USA";]]></attr>
 //START -> DO NOT REMOVE
 output.__id = input.__id;
 //END -> DO NOT REMOVE
-output.value = input.Id;
-output.systemID = "Salesforce - Chatter";
+output.value = input.ExtId__c;
+output.systemID = "WID";
 output.countryISOCode = "USA";]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'typeReference'" guiX="460" guiY="420" id="FOREACH_USER_TYPE_REFERENCE" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">

@@ -3,10 +3,8 @@
     <name>template-sfdc2wday-user-bidirectional-sync</name>
     <description></description>
     <muleExtension name="Salesforce" qualifier="org.mule.tooling.ui.contribution.sfdc.3.5.0"/>
-    <muleExtension name="Workday Human Resource" qualifier="org.mule.tooling.ui.contribution.wd-hr"/>
     <muleExtension name="Workday Staffing" qualifier="org.mule.tooling.ui.contribution.wd-staffing"/>
-    <muleExtension name="Workday Notifications" qualifier="org.mule.tooling.ui.contribution.wd-notification"/>
-    <muleExtension name="Workday External Integrations" qualifier="org.mule.tooling.ui.contribution.wd-external"/>
-    <muleExtension name="Workday Recruiting" qualifier="org.mule.tooling.ui.contribution.wd-recruiting"/>
+      <muleExtension name="Workday Recruiting" qualifier="org.mule.tooling.ui.contribution.wd-recruiting"/>
     <muleExtension name="Workday Integrations" qualifier="org.mule.tooling.ui.contribution.wd-integration"/>
+    <muleExtension name="Workday Human Resource" qualifier="org.mule.tooling.ui.contribution.wd-hr"/>
 </mule-project>

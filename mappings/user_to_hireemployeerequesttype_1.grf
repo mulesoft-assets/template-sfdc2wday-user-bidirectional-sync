@@ -392,7 +392,7 @@
 <Field __index="979" __sourcePath="{}/object/hireEmployeeData/hireEmployeeEventData/employeeExternalIDData/externalID/systemID" containerType="SINGLE" label="systemID" name="systemID" type="string"/>
 </Record>
 </Metadata>
-<Metadata __index="1012" __referenceCounter="0" __sourcePath="{}/object/hireEmployeeData/hireEmployeeEventData/positionDetails/positionExternalIDData/externalID" _dataStructure="SINGLE_DIMENSIONAL_COLLECTION" _id="__id" _metadataParentId="cf3a30bd-7bd4-4722-9130-3a7b602c0a01" _parent_id="__parent_id" _type="Output" id="7c37a15c-70d9-4cea-bc62-c79529cb6585">
+<Metadata __index="1012" __referenceCounter="1" __sourcePath="{}/object/hireEmployeeData/hireEmployeeEventData/positionDetails/positionExternalIDData/externalID" _dataStructure="SINGLE_DIMENSIONAL_COLLECTION" _id="__id" _metadataParentId="cf3a30bd-7bd4-4722-9130-3a7b602c0a01" _parent_id="__parent_id" _type="Output" id="7c37a15c-70d9-4cea-bc62-c79529cb6585">
 <Record fieldDelimiter="," name="externalID" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
 <Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
 <Field __artificialType="_parent_id" __systemManaged="true" name="__parent_id" type="string"/>
@@ -3925,7 +3925,7 @@
 <Field __index="166" __sourcePath="{}/object/hireEmployeeData/applicantData/personalData/contactData/webAddressData/usageData/useForTenantedReference/descriptor" containerType="SINGLE" label="descriptor" name="descriptor" type="string"/>
 </Record>
 </Metadata>
-<Metadata __index="0" __referenceCounter="30" __sourcePath="{}/User" _dataStructure="OBJECT" _id="__id" _type="Input" id="e3371034-2a0d-4d6f-bc70-cd623998d410">
+<Metadata __index="0" __referenceCounter="31" __sourcePath="{}/User" _dataStructure="OBJECT" _id="__id" _type="Input" id="e3371034-2a0d-4d6f-bc70-cd623998d410">
 <Record fieldDelimiter="," name="User" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
 <Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
 <Field __implementationClass="java.lang.String" __index="128" __sourcePath="{}/User/AboutMe" containerType="SINGLE" label="AboutMe" name="AboutMe" type="string"/>
@@ -5052,6 +5052,14 @@
           </clover:collection>
           <descriptor>$0.descriptor_84</descriptor>
         </payRateTypeReference>
+        <positionExternalIDData>
+          <clover:collection clover:name="externalID">
+            <item clover:inPort="30" clover:key="__parent_id" clover:parentKey="__id">
+              <externalID>$30.externalID</externalID>
+              <systemID>$30.systemID</systemID>
+            </item>
+          </clover:collection>
+        </positionExternalIDData>
         <positionTimeTypeReference>
           <clover:collection clover:name="ID">
             <item clover:inPort="24" clover:key="__parent_id" clover:parentKey="__id">
@@ -7591,8 +7599,8 @@
 output.__id = input.__id;
 output.__parent_id = input.__id;
 //END -> DO NOT REMOVE
-output.postalCode = (isnull(input.PostalCode) ? inputArguments.postalCode : input.PostalCode);
 output.effectiveDate = (isnull(input.CreatedDate) ? null : str2calendar(input.CreatedDate,"yyyy-MM-dd"));
+output.postalCode = (isnull(input.PostalCode) ? inputArguments.postalCode : input.PostalCode);
 output.municipality = (isnull(input.City) ? inputArguments.city : input.City);
 ]]></attr>
 </Node>
@@ -7614,6 +7622,15 @@ output.__parent_id = input.__id;
 output.emailAddress = input.Email;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Foreach 'User' -&gt; 'externalID'" guiX="460" guiY="3020" id="FOREACH_USER_EXTERNAL_ID" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
+<attr name="melScript"><![CDATA[//MEL
+//START -> DO NOT REMOVE
+output.__id = input.__id;
+output.__parent_id = input.__id;
+//END -> DO NOT REMOVE
+output.externalID = input.Id;
+output.systemID = "Salesforce - Chatter";]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Foreach 'User' -&gt; 'externalID'" guiX="460" guiY="3020" id="FOREACH_USER_EXTERNAL_ID1" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
 <attr name="melScript"><![CDATA[//MEL
 //START -> DO NOT REMOVE
 output.__id = input.__id;
@@ -7858,6 +7875,7 @@ output.public = 1;]]></attr>
 <Edge debugMode="true" fromNode="FOREACH_USER_ADDRESS_LINE_DATA:0" guiBendpoints="" id="Edge8" inPort="Port 3 (in)" metadata="d1f50568-2efd-4b7c-a19a-d27f6e5167c3" outPort="Port 0 (out)" toNode="BEAN_WRITER0:3"/>
 <Edge debugMode="true" fromNode="FOREACH_USER_EMAIL_ADDRESS_DATA:0" guiBendpoints="" id="Edge20" inPort="Port 9 (in)" metadata="f8efad7a-cac8-4237-8ca4-7280f6bb65ac" outPort="Port 0 (out)" toNode="BEAN_WRITER0:9"/>
 <Edge debugMode="true" fromNode="FOREACH_USER_EXTERNAL_ID:0" guiBendpoints="" id="Edge28" inPort="Port 29 (in)" metadata="ba7ec28a-3006-4bb3-b006-9b7f3e511963" outPort="Port 0 (out)" toNode="BEAN_WRITER0:29"/>
+<Edge debugMode="true" fromNode="FOREACH_USER_EXTERNAL_ID1:0" guiBendpoints="" id="Edge62" inPort="Port 30 (in)" metadata="7c37a15c-70d9-4cea-bc62-c79529cb6585" outPort="Port 0 (out)" toNode="BEAN_WRITER0:30"/>
 <Edge debugMode="true" fromNode="FOREACH_USER_ID:0" guiBendpoints="" id="Edge4" inPort="Port 1 (in)" metadata="38f040a8-a9b6-4d2f-bb4b-bc925c8e4867" outPort="Port 0 (out)" toNode="BEAN_WRITER0:1"/>
 <Edge debugMode="true" fromNode="FOREACH_USER_ID1:0" guiBendpoints="" id="Edge12" inPort="Port 5 (in)" metadata="6650547a-5142-4864-8a3d-b0d4186a826b" outPort="Port 0 (out)" toNode="BEAN_WRITER0:5"/>
 <Edge debugMode="true" fromNode="FOREACH_USER_ID10:0" guiBendpoints="" id="Edge44" inPort="Port 20 (in)" metadata="40447370-2c18-4208-966e-3385411cb813" outPort="Port 0 (out)" toNode="BEAN_WRITER0:20"/>
@@ -7914,5 +7932,6 @@ output.public = 1;]]></attr>
 <Edge debugMode="true" fromNode="SIMPLE_COPY0:27" guiBendpoints="" id="Edge57" inPort="Port 0 (in)" metadata="e3371034-2a0d-4d6f-bc70-cd623998d410" outPort="Port 27 (out)" toNode="FOREACH_USER_ID15:0"/>
 <Edge debugMode="true" fromNode="SIMPLE_COPY0:28" guiBendpoints="" id="Edge59" inPort="Port 0 (in)" metadata="e3371034-2a0d-4d6f-bc70-cd623998d410" outPort="Port 28 (out)" toNode="FOREACH_USER_ID16:0"/>
 <Edge debugMode="true" fromNode="SIMPLE_COPY0:29" guiBendpoints="" id="Edge27" inPort="Port 0 (in)" metadata="e3371034-2a0d-4d6f-bc70-cd623998d410" outPort="Port 29 (out)" toNode="FOREACH_USER_EXTERNAL_ID:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY0:30" guiBendpoints="" id="Edge61" inPort="Port 0 (in)" metadata="e3371034-2a0d-4d6f-bc70-cd623998d410" outPort="Port 30 (out)" toNode="FOREACH_USER_EXTERNAL_ID1:0"/>
 </Phase>
 </Graph>
