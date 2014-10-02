@@ -5847,12 +5847,12 @@
 <Field __index="2480" __sourcePath="{}/list/workerData/userID" containerType="SINGLE" label="userID" name="userID" type="string"/>
 <Field __index="2504" __sourcePath="{}/list/workerData/workerID" containerType="SINGLE" label="workerID" name="workerID" type="string"/>
 <Field __index="2507" __sourcePath="{}/list/workerReference/descriptor" containerType="SINGLE" label="descriptor" name="descriptor_111" type="string"/>
-<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[1]/municipality" containerType="SINGLE" label="CityRule" name="CityRule" type="string"/>
-<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[1]/postalCode" containerType="SINGLE" label="PostalCodeRule" name="PostalCodeRule" type="string"/>
-<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[1]/countryRegionReference[1]/ID[2]/value" containerType="SINGLE" label="StateRule" name="StateRule" type="string"/>
-<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[1]/countryReference/ID[3]/value" containerType="SINGLE" label="CountryRule" name="CountryRule" type="string"/>
+<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[last()]/municipality" containerType="SINGLE" label="CityRule" name="CityRule" type="string"/>
+<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[last()]/postalCode" containerType="SINGLE" label="PostalCodeRule" name="PostalCodeRule" type="string"/>
+<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[last()]/countryRegionReference[1]/ID[2]/value" containerType="SINGLE" label="StateRule" name="StateRule" type="string"/>
+<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[last()]/countryReference/ID[3]/value" containerType="SINGLE" label="CountryRule" name="CountryRule" type="string"/>
 <Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/emailAddressData[1]/emailAddress" containerType="SINGLE" label="EmailRule" name="EmailRule" type="string"/>
-<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[1]/addressLineData[1]/value" containerType="SINGLE" label="StreetRule" name="StreetRule" type="string"/>
+<Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/addressData[last()]/addressLineData[1]/value" containerType="SINGLE" label="StreetRule" name="StreetRule" type="string"/>
 <Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/phoneData[1]/phoneNumber" containerType="SINGLE" label="PhoneRule" name="PhoneRule" type="string"/>
 <Field __artificialType="XPATH" __xpath="{=}/workerData/personalData/contactData/phoneData[1]/phoneExtension" containerType="SINGLE" label="PhoneExtensionRule" name="PhoneExtensionRule" type="string"/>
 </Record>
@@ -7474,12 +7474,12 @@
   <Mapping cloverField="userID" trim="true" xpath="workerData/userID"/>
   <Mapping cloverField="workerID" trim="true" xpath="workerData/workerID"/>
   <Mapping cloverField="descriptor_111" trim="true" xpath="workerReference/descriptor"/>
-  <Mapping cloverField="CityRule" trim="true" xpath="workerData/personalData/contactData/addressData[1]/municipality"/>
-  <Mapping cloverField="PostalCodeRule" trim="true" xpath="workerData/personalData/contactData/addressData[1]/postalCode"/>
-  <Mapping cloverField="StateRule" trim="true" xpath="workerData/personalData/contactData/addressData[1]/countryRegionReference[1]/ID[2]/value"/>
-  <Mapping cloverField="CountryRule" trim="true" xpath="workerData/personalData/contactData/addressData[1]/countryReference/ID[3]/value"/>
+  <Mapping cloverField="CityRule" trim="true" xpath="workerData/personalData/contactData/addressData[last()]/municipality"/>
+  <Mapping cloverField="PostalCodeRule" trim="true" xpath="workerData/personalData/contactData/addressData[last()]/postalCode"/>
+  <Mapping cloverField="StateRule" trim="true" xpath="workerData/personalData/contactData/addressData[last()]/countryRegionReference[1]/ID[2]/value"/>
+  <Mapping cloverField="CountryRule" trim="true" xpath="workerData/personalData/contactData/addressData[last()]/countryReference/ID[3]/value"/>
   <Mapping cloverField="EmailRule" trim="true" xpath="workerData/personalData/contactData/emailAddressData[1]/emailAddress"/>
-  <Mapping cloverField="StreetRule" trim="true" xpath="workerData/personalData/contactData/addressData[1]/addressLineData[1]/value"/>
+  <Mapping cloverField="StreetRule" trim="true" xpath="workerData/personalData/contactData/addressData[last()]/addressLineData[1]/value"/>
   <Mapping cloverField="PhoneRule" trim="true" xpath="workerData/personalData/contactData/phoneData[1]/phoneNumber"/>
   <Mapping cloverField="PhoneExtensionRule" trim="true" xpath="workerData/personalData/contactData/phoneData[1]/phoneExtension"/>
 </Context>
@@ -11024,8 +11024,8 @@
 //START -> DO NOT REMOVE
 output.__id = input.__id;
 //END -> DO NOT REMOVE
-output.FirstName = input.firstName;
-output.LastName = input.lastName;
+output.FirstName = input.firstName_2;
+output.LastName = input.lastName_2;
 output.City = input.CityRule;
 output.PostalCode = input.PostalCodeRule;
 output.State = input.StateRule;
