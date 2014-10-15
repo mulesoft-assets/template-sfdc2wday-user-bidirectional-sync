@@ -73,6 +73,7 @@ payload = list;]]></expression-component>
 
             </batch:step>
             <batch:step name="updateContactInfoInWorkDayStep" accept-expression="recordVars['LastModifiedDate'] == null || (org.mule.kicks.DateUtils.isAfter(payload['LastModifiedDate'], recordVars['LastModifiedDate'] is NullPayload ? null : recordVars['LastModifiedDate']) &amp;&amp; '${sfdc.integration.user.id}' != payload.get('LastModifiedById'))">
+
                 <data-mapper:transform config-ref="User_To_MaintainContactInformationForPersonEventRequestType" doc:name="User To MaintainContactInformationForPersonEventRequestType">
                     <data-mapper:input-arguments>
                         <data-mapper:input-argument key="postalCode">${wday.postalCode}</data-mapper:input-argument>

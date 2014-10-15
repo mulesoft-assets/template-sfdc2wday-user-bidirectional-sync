@@ -17,8 +17,13 @@ http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd
 	<data-mapper:config name="pojo_to_hireemployeerequesttype" transformationGraphPath="pojo_to_hireemployeerequesttype.grf" doc:name="DataMapper"/>
     <data-mapper:config name="EmployeeType_To_TerminateEmployeeRequestType" transformationGraphPath="employeetype_to_terminateemployeerequesttype.grf" doc:name="DataMapper"/>
     
+    <wd-staffing:config name="Workday_Staffing1" staffingUser="${wday.integration.user}" staffingPassword="${wday.integration.password}" doc:name="Workday Staffing" staffingEndpoint="${wday.endpoint}">
+        <wd-staffing:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/>
+    </wd-staffing:config>
+    <sfdc:config name="SalesforceTest" username="${sfdc.test.username}" password="${sfdc.test.password}" securityToken="${sfdc.test.securityToken}" doc:name="Salesforce"/>
+    
 	<sub-flow name="upsertUserInSalesforceFlow" doc:name="upsertUserInSalesforceFlow">
-         <sfdc:upsert config-ref="Salesforce" externalIdFieldName="Id" type="User" doc:name="Upsert user in Salesforce">
+         <sfdc:upsert config-ref="SalesforceTest" externalIdFieldName="Id" type="User" doc:name="Upsert user in Salesforce">
              <sfdc:objects ref="#[payload]"/>
          </sfdc:upsert>
         <logger level="INFO" message="Update User in Salesforce result: #[payload]" doc:name="Logger"/>
@@ -26,7 +31,7 @@ http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd
 
     
     <sub-flow name="queryUserFromSalesforceFlow" doc:name="queryUserFromSalesforceFlow">
-        <sfdc:query-single config-ref="Salesforce" query="SELECT Id, Email, FirstName, LastName, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, CommunityNickname FROM User WHERE Email = '#[payload['Email']]'" doc:name="Query user from Salesforce"/>
+        <sfdc:query-single config-ref="Salesforce" query="SELECT Id, Email, FirstName, LastName, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, CommunityNickname, ExtId__c FROM User WHERE Email = '#[payload['Email']]'" doc:name="Query user from Salesforce"/>
         <logger level="INFO" message="Query user from A result: #[payload]" doc:name="Logger"/>
     </sub-flow>
 
@@ -38,13 +43,13 @@ http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd
     </sub-flow>
     <sub-flow name="hireEmployeeFlow" doc:name="hireEmployeeFlow">
         <data-mapper:transform config-ref="pojo_to_hireemployeerequesttype" doc:name="Employee To HireEmployeeRequestType"/>
-        <wd-staffing:hire-employee config-ref="Workday_Staffing" doc:name="Workday Staffing"/>
+        <wd-staffing:hire-employee config-ref="Workday_Staffing1" doc:name="Workday Staffing"/>
     </sub-flow>
     <sub-flow name="terminateWorkdayEmployeeFlow" doc:name="terminateWorkdayEmployeeFlow">
         <wd-staffing:terminate-employee config-ref="Workday_Staffing" doc:name="Workday Staffing"/>
     </sub-flow>
     <sub-flow name="queryWorkdayEmployeeFlow" doc:name="queryWorkdayEmployeeFlow">
-        <wd-hr:get-employee config-ref="WorkdayHumanResource" doc:name="Workday Human Resource"/>
+        <wd-hr:get-workers config-ref="WorkdayHumanResource" doc:name="Workday Human Resource" workersRequest-ref="#[org.mule.kicks.WorkersRequest.getWorker(payload)]"/>
     </sub-flow>
     <sub-flow name="getWorkdaytoTerminateFlow" doc:name="getWorkdaytoTerminateFlow">
         <wd-hr:get-employee config-ref="WorkdayHumanResource" doc:name="Workday Human Resource"/>

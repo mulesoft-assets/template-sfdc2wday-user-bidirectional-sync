@@ -37,12 +37,12 @@ import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.transport.NullPayload;
 
 import com.mulesoft.module.batch.BatchTestHelper;
-import com.sforce.soap.partner.UpsertResult;
 import com.workday.hr.EmployeeGetType;
 import com.workday.hr.EmployeeReferenceType;
-import com.workday.hr.EmployeeType;
 import com.workday.hr.ExternalIntegrationIDReferenceDataType;
+import com.workday.hr.GetWorkersResponseType;
 import com.workday.hr.IDType;
+import com.workday.hr.WorkerType;
 import com.workday.staffing.EventClassificationSubcategoryObjectIDType;
 import com.workday.staffing.EventClassificationSubcategoryObjectType;
 import com.workday.staffing.TerminateEmployeeDataType;
@@ -67,7 +67,9 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	private static final String VAR_FIRST_NAME = "FirstName";
 	private static final String VAR_EMAIL = "Email";
 	private static String SFDC_PROFILE_ID;
-	private String EXT_ID, EMAIL, LAST_NAME = "WorkdayWorker";
+	private String EXT_ID, LAST_NAME = "WorkdayWorker";
+	private final String EMAIL = "bwillis@gmailtest.com";
+	private final String EMAIL1 = "bwillisss@gmailtest.com";
 	private Employee employee;
 	private static final String ANYPOINT_TEMPLATE_NAME = "userBiSync";
 	private static final String SALESFORCE_INBOUND_FLOW_NAME = "triggerSyncFromSalesforceFlow";
@@ -81,6 +83,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	private BatchTestHelper batchTestHelper;
 	
 	private static final String PATH_TO_TEST_PROPERTIES = "./src/test/resources/mule.test.properties";
+	private static String SFDC_ID = null;
 	
 	private List<Map<String, Object>> createdUsersInSalesforce = new ArrayList<Map<String, Object>>();
 	private List<String> createdUsersInWorkday = new ArrayList<String>();
@@ -99,7 +102,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	
 		WORKDAY_MANAGER_ID = props.getProperty("wday.manager.id");
 		WORKDAY_POSITION_ID = props.getProperty("wday.position.id");
-		
+		SFDC_ID = props.getProperty("sfdc.testuser.id");
 		SFDC_PROFILE_ID = props.getProperty("sfdc.profileId");
 		
 		System.setProperty("page.size", "1000");
@@ -121,10 +124,11 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	private void createTestDataInSalesforceSandbox() throws MuleException, Exception{
 		Map<String, Object> salesforceUser0 = new HashMap<String, Object>();
 		String infixSalesforce = "_0_SFDC_" + ANYPOINT_TEMPLATE_NAME + "_" + System.currentTimeMillis();
+		salesforceUser0.put(VAR_ID, SFDC_ID);
 		salesforceUser0.put(VAR_USERNAME, "Name" + infixSalesforce + "@example.com");
 		salesforceUser0.put(VAR_FIRST_NAME, "fn" + infixSalesforce);
 		salesforceUser0.put(VAR_LAST_NAME, "ln" + infixSalesforce);
-		salesforceUser0.put(VAR_EMAIL, "email" + infixSalesforce + "@example.com");
+		salesforceUser0.put(VAR_EMAIL, EMAIL);
 		salesforceUser0.put("ProfileId", SFDC_PROFILE_ID);
 		salesforceUser0.put("Alias", "al0Sfdc");
 		salesforceUser0.put("TimeZoneSidKey", "GMT");
@@ -132,10 +136,10 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		salesforceUser0.put("EmailEncodingKey", "ISO-8859-1");
 		salesforceUser0.put("LanguageLocaleKey", "en_US");
 		salesforceUser0.put("CommunityNickname", "cn" + infixSalesforce);
+		createdUsersInSalesforce.clear();
 		createdUsersInSalesforce.add(salesforceUser0);
-		logger.info("creating salesforce user: " + salesforceUser0.get(VAR_EMAIL));
-		MuleEvent event = upsertUserInSalesforceFlow.process(getTestEvent(Collections.singletonList(salesforceUser0), MessageExchangePattern.REQUEST_RESPONSE));
-		salesforceUser0.put(VAR_ID, (((UpsertResult) ((List<?>) event.getMessage().getPayload()).get(0))).getId());
+		logger.info("updating salesforce user: " + salesforceUser0.get(VAR_EMAIL));
+		upsertUserInSalesforceFlow.process(getTestEvent(Collections.singletonList(salesforceUser0), MessageExchangePattern.REQUEST_RESPONSE));		
 		createdUsersInWorkday.add(salesforceUser0.get(VAR_ID).toString());
 	}
 	
@@ -174,9 +178,8 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
     
     private List<Employee> prepareNewHire(){
 		EXT_ID = "SFDC2Workday_" + System.currentTimeMillis();
-		EMAIL = "info" + System.currentTimeMillis() + "@test.com";
 		logger.info("employee name: " + EXT_ID);
-		employee = new Employee(EXT_ID, LAST_NAME, EMAIL, "650-232-2323", "999 Main St", "San Francisco", "CA", "94105", "US", "o7aHYfwG", 
+		employee = new Employee(EXT_ID, LAST_NAME, EMAIL1, "232-2323", "999 Main St", "San Francisco", "CA", "94105", "US", "o7aHYfwG", 
 				"2014-04-17-07:00", "2014-04-21-07:00", "QA Engineer", "San_Francisco_site", "Regular", "Full Time", "Salary", "USD", "140000", "Annual", WORKDAY_POSITION_ID, WORKDAY_MANAGER_ID, EXT_ID);
 		List<Employee> list = new ArrayList<Employee>();
 		list.add(employee);
@@ -185,17 +188,21 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	}
     
 	@Test
-	public void testSalesforceDirection() throws MuleException, Exception {
+	public void testSalesforceDirection() throws MuleException, Exception {		
 		// test sfdc -> workday	
 		Thread.sleep(1000);
 		executeWaitAndAssertBatchJob(SALESFORCE_INBOUND_FLOW_NAME);
+		Map<String, Object> user = new HashMap<String, Object>();
+		user.put(VAR_EMAIL, EMAIL);
+		Map<String, Object> sfdcUser = (Map<String, Object>)queryUser(user , queryUserFromSalesforceFlow);
 		
-		EmployeeType worker = queryWorkdayUser(createdUsersInSalesforce.get(0).get(VAR_ID).toString(), queryUserFromWorkdayFlow);
+		WorkerType worker = queryWorkdayUser(sfdcUser.get("ExtId__c").toString(), queryUserFromWorkdayFlow);
+		
 		Assert.assertFalse("Synchronized user should not be null payload", worker == null);
 		Assert.assertEquals("The user should have been sync and new name must match", createdUsersInSalesforce.get(0).get(VAR_FIRST_NAME), 
-				worker.getEmployeeData().get(0).getPersonalInfoData().get(0).getPersonData().getNameData().get(0).getFirstName());
+				worker.getWorkerData().getPersonalData().getNameData().getPreferredNameData().getNameDetailData().getFirstName());
 		Assert.assertEquals("The user should have been sync and new title must match", createdUsersInSalesforce.get(0).get(VAR_LAST_NAME), 
-				worker.getEmployeeData().get(0).getPersonalInfoData().get(0).getPersonData().getNameData().get(0).getLastName().get(0).getValue());
+				worker.getWorkerData().getPersonalData().getNameData().getPreferredNameData().getNameDetailData().getLastName());
 			
 	}
 
@@ -209,7 +216,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		executeWaitAndAssertBatchJob(WORKDAY_INBOUND_FLOW_NAME);
 
 		Map<String, Object> workdayUser = new HashMap<String, Object>();
-		workdayUser.put(VAR_EMAIL, EMAIL);
+		workdayUser.put(VAR_EMAIL, EMAIL1);
 		workdayUser.put(VAR_FIRST_NAME, EXT_ID);
 		workdayUser.put(VAR_LAST_NAME, LAST_NAME);
 		Object object =  queryUser(workdayUser , queryUserFromSalesforceFlow);
@@ -224,11 +231,12 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	
 	}
 	
-	private EmployeeType queryWorkdayUser(String id,
+	private WorkerType queryWorkdayUser(String id,
 			InterceptingChainLifecycleWrapper queryUserFromWorkdayFlow2) {
 		try {
-			MuleEvent response = queryUserFromWorkdayFlow2.process(getTestEvent(getEmployee(id), MessageExchangePattern.REQUEST_RESPONSE));
-			return (EmployeeType) response.getMessage().getPayload();
+			MuleEvent response = queryUserFromWorkdayFlow2.process(getTestEvent(id, MessageExchangePattern.REQUEST_RESPONSE));
+			GetWorkersResponseType res = (GetWorkersResponseType) response.getMessage().getPayload();
+			return res.getResponseData().getWorker().isEmpty() ? null : res.getResponseData().getWorker().get(0);
 		} catch (InitialisationException e) {
 			e.printStackTrace();
 		} catch (MuleException e) {
