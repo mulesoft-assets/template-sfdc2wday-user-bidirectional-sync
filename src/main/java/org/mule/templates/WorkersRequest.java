@@ -4,7 +4,7 @@
  * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
  */
 
-package org.mule.kicks;
+package org.mule.templates;
 
 import java.text.ParseException;
 import java.util.ArrayList;

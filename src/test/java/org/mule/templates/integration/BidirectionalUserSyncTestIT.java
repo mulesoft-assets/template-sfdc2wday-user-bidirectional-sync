@@ -31,9 +31,9 @@ import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
 import org.mule.api.lifecycle.InitialisationException;
-import org.mule.kicks.Employee;
 import org.mule.processor.chain.InterceptingChainLifecycleWrapper;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
+import org.mule.templates.Employee;
 import org.mule.transport.NullPayload;
 
 import com.mulesoft.module.batch.BatchTestHelper;

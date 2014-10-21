@@ -4,7 +4,7 @@
  * All rights reserved.  http://www.mulesoft.com
  */
 
-package org.mule.kicks;
+package org.mule.templates;
 
 import org.apache.commons.lang.Validate;
 import org.joda.time.DateTime;

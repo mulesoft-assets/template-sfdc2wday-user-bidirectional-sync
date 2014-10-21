@@ -1,4 +1,4 @@
-package org.mule.kicks;
+package org.mule.templates;
 
 import java.text.SimpleDateFormat;
 import java.util.List;

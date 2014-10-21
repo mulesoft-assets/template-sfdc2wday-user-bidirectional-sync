@@ -31,15 +31,15 @@ http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schem
                 <logger message="Worker to be upserted: #[payload]" level="INFO" doc:name="log the Salesforce user"/>
                 <batch:set-record-variable variableName="sfdcUser" value="#[payload]" doc:name="store Salesforce user"/>
                 <enricher source="#[payload]" target="#[recordVars['userInTargetInstance']]" doc:name="store user">
-                    <wd-hr:get-workers config-ref="WorkdayHumanResource"  doc:name="query Workday for the worker" workersRequest-ref="#[org.mule.kicks.WorkersRequest.getWorker(payload['ExtId__c'])]"/>
+                    <wd-hr:get-workers config-ref="WorkdayHumanResource"  doc:name="query Workday for the worker" workersRequest-ref="#[org.mule.templates.WorkersRequest.getWorker(payload['ExtId__c'])]"/>
                 </enricher>
 
             </batch:step>
             <batch:step name="GetLastModifiedDateInWorkday" accept-expression="(recordVars['userInTargetInstance'] != null)">
                 <enricher source="#[payload]" target="#[recordVars['LastModifiedDate']]" doc:name="store the value in 'recordVars['LastModifiedDate']'">
                     <processor-chain doc:name="Processor Chain">
-                        <wd-hr:get-workers config-ref="WorkdayHumanResource"  doc:name="get Worker Events" workersRequest-ref="#[org.mule.kicks.WorkersRequest.getWorkerEvents(payload['ExtId__c'], ${poll.frequencyMillis}, ${poll.offset})]"/>
-                        <custom-transformer class="org.mule.kicks.EventHistoryProcessor" doc:name="iterate through events"/>
+                        <wd-hr:get-workers config-ref="WorkdayHumanResource"  doc:name="get Worker Events" workersRequest-ref="#[org.mule.templates.WorkersRequest.getWorkerEvents(payload['ExtId__c'], ${poll.frequencyMillis}, ${poll.offset})]"/>
+                        <custom-transformer class="org.mule.templates.EventHistoryProcessor" doc:name="iterate through events"/>
                     </processor-chain>
                 </enricher>
 
@@ -72,7 +72,7 @@ payload = list;]]></expression-component>
                 </sfdc:upsert>
 
             </batch:step>
-            <batch:step name="updateContactInfoInWorkDayStep" accept-expression="recordVars['LastModifiedDate'] == null || (org.mule.kicks.DateUtils.isAfter(payload['LastModifiedDate'], recordVars['LastModifiedDate'] is NullPayload ? null : recordVars['LastModifiedDate']) &amp;&amp; '${sfdc.integration.user.id}' != payload.get('LastModifiedById'))">
+            <batch:step name="updateContactInfoInWorkDayStep" accept-expression="recordVars['LastModifiedDate'] == null || (org.mule.templates.DateUtils.isAfter(payload['LastModifiedDate'], recordVars['LastModifiedDate'] is NullPayload ? null : recordVars['LastModifiedDate']) &amp;&amp; '${sfdc.integration.user.id}' != payload.get('LastModifiedById'))">
 
                 <data-mapper:transform config-ref="User_To_MaintainContactInformationForPersonEventRequestType" doc:name="User To MaintainContactInformationForPersonEventRequestType">
                     <data-mapper:input-arguments>
@@ -107,8 +107,8 @@ payload = list;]]></expression-component>
                 <batch:set-record-variable variableName="workDayId" value="#[payload.workerReference.getID().get(1).getValue()]" doc:name="store Workday Id"/>
                 <enricher source="payload" target="#[recordVars['lastEvent']]" doc:name="store the value in 'recordVars['lastEvent']'">
                     <processor-chain doc:name="Processor Chain">
-                        <wd-integration:get-event-detail config-ref="Workday_Integrations" eventDetailRequest-ref="#[org.mule.kicks.EventDetailRequest.create(payload)]" doc:name="query for the last event"/>
-                        <custom-transformer class="org.mule.kicks.TransactionLogProcessor" doc:name="iterate through transaction logs"/>
+                        <wd-integration:get-event-detail config-ref="Workday_Integrations" eventDetailRequest-ref="#[org.mule.templates.EventDetailRequest.create(payload)]" doc:name="query for the last event"/>
+                        <custom-transformer class="org.mule.templates.TransactionLogProcessor" doc:name="iterate through transaction logs"/>
                     </processor-chain>
                 </enricher>
             </batch:step>

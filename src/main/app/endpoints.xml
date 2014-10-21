@@ -36,7 +36,7 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
 			<watermark variable="WorkdayLastQueryDate" default-expression="${watermark.default.expression}" update-expression="#[ new java.util.Date()]"/>
             <processor-chain doc:name="Processor Chain">
                 <expression-component doc:name="lock processing to avoid two syncs occurring at the same time"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
-                <wd-hr:get-workers config-ref="WorkdayHumanResource" workersRequest-ref="#[org.mule.kicks.WorkersRequest.create(WorkdayLastQueryDate, ${poll.frequencyMillis}, ${poll.offset})]" doc:name="Workday Human Resource"/>
+                <wd-hr:get-workers config-ref="WorkdayHumanResource" workersRequest-ref="#[org.mule.templates.WorkersRequest.create(WorkdayLastQueryDate, ${poll.frequencyMillis}, ${poll.offset})]" doc:name="Workday Human Resource"/>
                 <logger message="fetching..#[flowVars['WorkdayLastQueryDate']]" level="INFO" doc:name="Logger"/>
 
             </processor-chain>

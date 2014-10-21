@@ -1,4 +1,4 @@
-package org.mule.kicks;
+package org.mule.templates;
 
 public class Employee {
 

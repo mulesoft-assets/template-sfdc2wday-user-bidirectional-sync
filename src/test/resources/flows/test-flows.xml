@@ -49,7 +49,7 @@ http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd
         <wd-staffing:terminate-employee config-ref="Workday_Staffing" doc:name="Workday Staffing"/>
     </sub-flow>
     <sub-flow name="queryWorkdayEmployeeFlow" doc:name="queryWorkdayEmployeeFlow">
-        <wd-hr:get-workers config-ref="WorkdayHumanResource" doc:name="Workday Human Resource" workersRequest-ref="#[org.mule.kicks.WorkersRequest.getWorker(payload)]"/>
+        <wd-hr:get-workers config-ref="WorkdayHumanResource" doc:name="Workday Human Resource" workersRequest-ref="#[org.mule.templates.WorkersRequest.getWorker(payload)]"/>
     </sub-flow>
     <sub-flow name="getWorkdaytoTerminateFlow" doc:name="getWorkdaytoTerminateFlow">
         <wd-hr:get-employee config-ref="WorkdayHumanResource" doc:name="Workday Human Resource"/>
