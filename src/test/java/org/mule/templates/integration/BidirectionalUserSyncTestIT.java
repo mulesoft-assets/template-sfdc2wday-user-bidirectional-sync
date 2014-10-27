@@ -60,7 +60,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	private static String WORKDAY_MANAGER_ID;
 	private static String WORKDAY_POSITION_ID;
 	private static final String INTEGRATION_ID = "Salesforce - Chatter";
-	private static final String TERMINATION_REASON_ID = "208082cd6b66443e801d95ffdc77461b";
+	private static String TERMINATION_REASON_ID;
 	private static final String VAR_ID = "Id";
 	private static final String VAR_USERNAME = "Username";
 	private static final String VAR_LAST_NAME = "LastName";
@@ -99,7 +99,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	
+		TERMINATION_REASON_ID = props.getProperty("wday.termination.id");
 		WORKDAY_MANAGER_ID = props.getProperty("wday.manager.id");
 		WORKDAY_POSITION_ID = props.getProperty("wday.position.id");
 		SFDC_ID = props.getProperty("sfdc.testuser.id");
@@ -166,7 +166,6 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		queryUserFromWorkdayFlow.initialise();
 	}
 
-	@SuppressWarnings("unchecked")
 	private void createTestDataInWorkdaySandBox() throws MuleException, Exception {
 		logger.info("creating a workday employee...");
 		try {
