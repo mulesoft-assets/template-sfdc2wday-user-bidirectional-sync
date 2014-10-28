@@ -11,16 +11,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -37,17 +31,8 @@ import org.mule.templates.Employee;
 import org.mule.transport.NullPayload;
 
 import com.mulesoft.module.batch.BatchTestHelper;
-import com.workday.hr.EmployeeGetType;
-import com.workday.hr.EmployeeReferenceType;
-import com.workday.hr.ExternalIntegrationIDReferenceDataType;
 import com.workday.hr.GetWorkersResponseType;
-import com.workday.hr.IDType;
 import com.workday.hr.WorkerType;
-import com.workday.staffing.EventClassificationSubcategoryObjectIDType;
-import com.workday.staffing.EventClassificationSubcategoryObjectType;
-import com.workday.staffing.TerminateEmployeeDataType;
-import com.workday.staffing.TerminateEmployeeRequestType;
-import com.workday.staffing.TerminateEventDataType;
 
 /**
  * The objective of this class is validating the correct behavior of the flows
@@ -57,19 +42,16 @@ import com.workday.staffing.TerminateEventDataType;
 @SuppressWarnings("unchecked")
 public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 
-	private static String WORKDAY_MANAGER_ID;
-	private static String WORKDAY_POSITION_ID;
-	private static final String INTEGRATION_ID = "Salesforce - Chatter";
-	private static String TERMINATION_REASON_ID;
+	private static String WORKDAY_USER_ID;	
 	private static final String VAR_ID = "Id";
 	private static final String VAR_USERNAME = "Username";
 	private static final String VAR_LAST_NAME = "LastName";
 	private static final String VAR_FIRST_NAME = "FirstName";
 	private static final String VAR_EMAIL = "Email";
 	private static String SFDC_PROFILE_ID;
-	private String EXT_ID, LAST_NAME = "WorkdayWorker";
+	private String TEMPLATE_PREFIX = "sfdc2wday-bidi-worker";
 	private final String EMAIL = "bwillis@gmailtest.com";
-	private final String EMAIL1 = "bwillisss@gmailtest.com";
+	private final String EMAIL1 = "bwillisss@gmailtest.com"; 	// wday test user needs to have this email set in wday
 	private Employee employee;
 	private static final String ANYPOINT_TEMPLATE_NAME = "userBiSync";
 	private static final String SALESFORCE_INBOUND_FLOW_NAME = "triggerSyncFromSalesforceFlow";
@@ -77,7 +59,6 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	private static final int TIMEOUT_MILLIS = 60;
 
 	private SubflowInterceptingChainLifecycleWrapper upsertUserInSalesforceFlow;
-	private SubflowInterceptingChainLifecycleWrapper hireWorkdaEmployeeFlow;
 	private InterceptingChainLifecycleWrapper queryUserFromSalesforceFlow;
 	private InterceptingChainLifecycleWrapper queryUserFromWorkdayFlow;
 	private BatchTestHelper batchTestHelper;
@@ -99,9 +80,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		TERMINATION_REASON_ID = props.getProperty("wday.termination.id");
-		WORKDAY_MANAGER_ID = props.getProperty("wday.manager.id");
-		WORKDAY_POSITION_ID = props.getProperty("wday.position.id");
+		WORKDAY_USER_ID = props.getProperty("wday.testuser.id");
 		SFDC_ID = props.getProperty("sfdc.testuser.id");
 		SFDC_PROFILE_ID = props.getProperty("sfdc.profileId");
 		
@@ -153,10 +132,6 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		upsertUserInSalesforceFlow = getSubFlow("upsertUserInSalesforceFlow");
 		upsertUserInSalesforceFlow.initialise();
 
-		// Flow for updating a user in Workday
-		hireWorkdaEmployeeFlow = getSubFlow("hireEmployeeFlow");
-		hireWorkdaEmployeeFlow.initialise();
-
 		// Flow for querying the user in Salesforce
 		queryUserFromSalesforceFlow = getSubFlow("queryUserFromSalesforceFlow");
 		queryUserFromSalesforceFlow.initialise();
@@ -167,23 +142,23 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	}
 
 	private void createTestDataInWorkdaySandBox() throws MuleException, Exception {
-		logger.info("creating a workday employee...");
+		SubflowInterceptingChainLifecycleWrapper flow = getSubFlow("updateWorkdayEmployee");
+		flow.initialise();
+		logger.info("updating a workday employee...");
 		try {
-			hireWorkdaEmployeeFlow.process(getTestEvent(prepareNewHire(), MessageExchangePattern.REQUEST_RESPONSE));						
+			flow.process(getTestEvent(prepareEdit(), MessageExchangePattern.REQUEST_RESPONSE));						
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
     
-    private List<Employee> prepareNewHire(){
-		EXT_ID = "SFDC2Workday_" + System.currentTimeMillis();
-		logger.info("employee name: " + EXT_ID);
-		employee = new Employee(EXT_ID, LAST_NAME, EMAIL1, "232-2323", "999 Main St", "San Francisco", "CA", "94105", "US", "o7aHYfwG", 
-				"2014-04-17-07:00", "2014-04-21-07:00", "QA Engineer", "San_Francisco_site", "Regular", "Full Time", "Salary", "USD", "140000", "Annual", WORKDAY_POSITION_ID, WORKDAY_MANAGER_ID, EXT_ID);
-		List<Employee> list = new ArrayList<Employee>();
-		list.add(employee);
-		createdUsersInWorkday.add(EXT_ID);
-		return list;
+    private Employee prepareEdit(){
+		String name = TEMPLATE_PREFIX + System.currentTimeMillis();
+		logger.info("employee name: " + name);
+		employee = new Employee(name, name, EMAIL1, "232-2323", "999 Main St", "San Francisco", "CA", "94105", "US", "o7aHYfwG", 
+				"2014-04-17-07:00", "2014-04-21-07:00", "QA Engineer", "San_Francisco_site", "Regular", "Full Time", "Salary", "USD", "140000", "Annual", null, null, WORKDAY_USER_ID);
+		createdUsersInWorkday.add(name);
+		return employee;
 	}
     
 	@Test
@@ -216,16 +191,16 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 
 		Map<String, Object> workdayUser = new HashMap<String, Object>();
 		workdayUser.put(VAR_EMAIL, EMAIL1);
-		workdayUser.put(VAR_FIRST_NAME, EXT_ID);
-		workdayUser.put(VAR_LAST_NAME, LAST_NAME);
+		workdayUser.put(VAR_FIRST_NAME, employee.getGivenName());
+		workdayUser.put(VAR_LAST_NAME, employee.getFamilyName());
 		Object object =  queryUser(workdayUser , queryUserFromSalesforceFlow);
 		
 		Assert.assertFalse("Synchronized user should not be null payload", object instanceof NullPayload);
 		
 		Map<String, Object> payload = (Map<String, Object>) object;
 		
-		Assert.assertEquals("The user should have been sync and new name must match", workdayUser.get(VAR_FIRST_NAME), payload.get(VAR_FIRST_NAME));
-		Assert.assertEquals("The user should have been sync and new title must match", workdayUser.get(VAR_LAST_NAME), payload.get(VAR_LAST_NAME));
+		Assert.assertEquals("The user should have been sync and new first name must match", workdayUser.get(VAR_FIRST_NAME), payload.get(VAR_FIRST_NAME));
+		Assert.assertEquals("The user should have been sync and new last name must match", workdayUser.get(VAR_LAST_NAME), payload.get(VAR_LAST_NAME));
 		createdUsersInSalesforce.add(payload);
 	
 	}
@@ -261,61 +236,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	@After
 	public void tearDown() throws InitialisationException, MuleException, Exception{
 		deleteTestUsersFromSalesforce(); 
-		deleteTestDataFromWorkdaySandBox();
-	}
-	
-	private void deleteTestDataFromWorkdaySandBox() throws MuleException, Exception {
-		// Delete the created users in Workday
-		for (String id : createdUsersInWorkday){
-			try {
-				SubflowInterceptingChainLifecycleWrapper flow = getSubFlow("getWorkdaytoTerminateFlow");
-				flow.initialise();
-				logger.info("deleting wday worker: " + id);
-				MuleEvent response = flow.process(getTestEvent(getEmployee(id), MessageExchangePattern.REQUEST_RESPONSE));			
-				flow = getSubFlow("terminateWorkdayEmployeeFlow");
-				flow.initialise();
-				response = flow.process(getTestEvent(prepareTerminate(response), MessageExchangePattern.REQUEST_RESPONSE));										
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	private TerminateEmployeeRequestType prepareTerminate(MuleEvent response) throws DatatypeConfigurationException{
-		TerminateEmployeeRequestType req = (TerminateEmployeeRequestType) response.getMessage().getPayload();
-		TerminateEmployeeDataType eeData = req.getTerminateEmployeeData();		
-		TerminateEventDataType event = new TerminateEventDataType();
-		eeData.setTerminationDate(xmlDate(new Date()));
-		EventClassificationSubcategoryObjectType prim = new EventClassificationSubcategoryObjectType();
-		List<EventClassificationSubcategoryObjectIDType> list = new ArrayList<EventClassificationSubcategoryObjectIDType>();
-		EventClassificationSubcategoryObjectIDType id = new EventClassificationSubcategoryObjectIDType();
-		id.setType("WID");
-		id.setValue(TERMINATION_REASON_ID);
-		list.add(id);
-		prim.setID(list);
-		event.setPrimaryReasonReference(prim);
-		eeData.setTerminateEventData(event );
-		return req;		
-	}
-	
-	private static XMLGregorianCalendar xmlDate(Date date) throws DatatypeConfigurationException {
-		GregorianCalendar gregorianCalendar = (GregorianCalendar) GregorianCalendar.getInstance();
-		gregorianCalendar.setTime(date);
-		return DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
-	}
-	
-	private EmployeeGetType getEmployee(String id){
-		EmployeeGetType get = new EmployeeGetType();
-		EmployeeReferenceType empRef = new EmployeeReferenceType();					
-		ExternalIntegrationIDReferenceDataType value = new ExternalIntegrationIDReferenceDataType();
-		IDType idType = new IDType();
-		value.setID(idType);
-		idType.setSystemID(INTEGRATION_ID);
-		idType.setValue(id);			
-		empRef.setIntegrationIDReference(value);
-		get.setEmployeeReference(empRef);		
-		return get;
-	}
+	}	
 
 	private void deleteTestUsersFromSalesforce() throws InitialisationException, MuleException, Exception {
 		List<Map<String, Object>> idList = new ArrayList<Map<String, Object>>();
