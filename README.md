@@ -28,7 +28,7 @@ Please review the terms of the license before downloading and using this templat
 # Use Case <a name="usecase"/>
 I want to have my users synchronized between Salesforce and Workday
 
-			## Template overview <a name="templateoverview"/>
+			## Template overview 
 			
 			Let's say we want to keep Salesforce synchronized with Workday. Then, the integration behavior can be summarized just with the following steps:
 			
@@ -102,7 +102,7 @@ column='486'
 
 ### As destination of data
 
-There are no particular considerations for this Anypoint Template regarding Siebel as data destination.
+There are no particular considerations for this Anypoint Template regarding Salesforce as data destination.
 
 
 ## Workday Considerations <a name="workdayconsiderations"/>
@@ -113,6 +113,7 @@ There are no particular considerations for this Anypoint Template regarding Work
 ### As destination of data
 
 There are no particular considerations for this Anypoint Template regarding Workday as data destination.
+
 # Run it! <a name="runit"/>
 Simple steps to get Salesforce to Workday User Bidirectional Sync running.
 
