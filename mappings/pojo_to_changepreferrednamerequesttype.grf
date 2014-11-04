@@ -40,7 +40,7 @@
 </Record>
 </Metadata>
 <Metadata __index="0" __referenceCounter="3" __sourcePath="{}/object" _dataStructure="OBJECT" _id="__id" _type="Input" id="d4814851-47ad-4391-9351-880dde782b74">
-<Record fieldDelimiter="," name="EmployeeJobvite" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
+<Record fieldDelimiter="," name="Employee" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
 <Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
 <Field __index="0" __sourcePath="{}/object/addr1" containerType="SINGLE" label="addr1" name="addr1" type="string"/>
 <Field __index="1" __sourcePath="{}/object/basePay" containerType="SINGLE" label="basePay" name="basePay" type="string"/>
@@ -442,7 +442,7 @@ output.__id = input.__id;
 output.firstName = input.givenName;
 output.lastName = input.familyName;]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Duplicate EmployeeJobvite" guiX="240" guiY="20" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="Duplicate Employee" guiX="240" guiY="20" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Edge debugMode="true" fromNode="BEAN_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="d4814851-47ad-4391-9351-880dde782b74" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
 <Edge debugMode="true" fromNode="FOREACH_OBJECT_ID:0" guiBendpoints="" id="Edge4" inPort="Port 1 (in)" metadata="f268d49c-5525-47dd-a459-921551fe88d3" outPort="Port 0 (out)" toNode="BEAN_WRITER0:1"/>
 <Edge debugMode="true" fromNode="FOREACH_OBJECT_ID1:0" guiBendpoints="" id="Edge6" inPort="Port 2 (in)" metadata="b8452f02-d955-4a61-9f9c-12bdff513f7b" outPort="Port 0 (out)" toNode="BEAN_WRITER0:2"/>
