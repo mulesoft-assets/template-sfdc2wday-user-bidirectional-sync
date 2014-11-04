@@ -149,7 +149,7 @@ payload.remove('LastModifiedDate');
    		payload.put('Id',recordVars['userInTargetInstance'].get('Id')); 
    } 
 
-   // We map the profile IDs from Database to Salesforce, each profileId from the left (source) will be map to the one on the right (target)  
+   // We map the profile IDs defined in the properties file  
    payload.put('ProfileId', '${sfdc.profileId}');  
      
    ]]></expression-component>
