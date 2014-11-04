@@ -4,7 +4,6 @@
     <description></description>
     <muleExtension name="Salesforce" qualifier="org.mule.tooling.ui.contribution.sfdc.3.5.0"/>
     <muleExtension name="Workday Staffing" qualifier="org.mule.tooling.ui.contribution.wd-staffing"/>
-      <muleExtension name="Workday Recruiting" qualifier="org.mule.tooling.ui.contribution.wd-recruiting"/>
     <muleExtension name="Workday Integrations" qualifier="org.mule.tooling.ui.contribution.wd-integration"/>
     <muleExtension name="Workday Human Resource" qualifier="org.mule.tooling.ui.contribution.wd-hr"/>
 </mule-project>
