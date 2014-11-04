@@ -201,8 +201,8 @@
 ]]></attr>
 <attr name="_data_format"><![CDATA[JAVA]]></attr>
 <attr name="schema"><![CDATA[<?xml version="1.0" encoding="UTF-8"?><schema-object>
-  <typed-object-ref type-ref="org.mule.kicks.EmployeeJobvite"/>
-  <typed-object type="org.mule.kicks.EmployeeJobvite">
+  <typed-object-ref type-ref="org.mule.templates.Employee"/>
+  <typed-object type="org.mule.templates.Employee">
     <typed-object-ref name="addr1" type-ref="java.lang.String"/>
     <typed-object-ref name="basePay" type-ref="java.lang.String"/>
     <typed-object-ref name="basePayCurrency" type-ref="java.lang.String"/>
