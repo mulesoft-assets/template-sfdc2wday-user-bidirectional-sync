@@ -3,6 +3,7 @@
 
 + [License Agreement](#licenseagreement)
 + [Use Case](#usecase)
+	* [Template overview](#templateoverview)
 + [Considerations](#considerations)
 	* [Salesforce Considerations](#salesforceconsiderations)
 	* [Workday Considerations](#workdayconsiderations)
@@ -28,7 +29,7 @@ Please review the terms of the license before downloading and using this templat
 # Use Case <a name="usecase"/>
 I want to have my users synchronized between Salesforce and Workday
 
-### Template overview
+### Template overview <a name="templateoverview"/>
 						
 Let's say we want to keep Salesforce synchronized with Workday. Then, the integration behavior can be summarized just with the following steps:
 
@@ -49,7 +50,7 @@ Let's say we want to keep Salesforce synchronized with Workday. Then, the integr
 
 And so on...
 			  
-The question for recent changes since a certain moment is nothing but a [poll inbound][1] with a [watermark][2] defined.
+The question for recent changes since a certain moment is nothing but a [poll inbound](http://www.mulesoft.org/documentation/display/current/Poll+Reference) with a [watermark](http://blogs.mulesoft.org/data-synchronizing-made-easy-with-mule-watermarks/) defined.
 
 # Considerations <a name="considerations"/>
 

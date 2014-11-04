@@ -9,7 +9,7 @@
 		<section id="use_case">  
 			I want to have my users synchronized between Salesforce and Workday
 <![CDATA[
-### Template overview
+### Template overview <a name="templateoverview"/>
 						
 Let's say we want to keep Salesforce synchronized with Workday. Then, the integration behavior can be summarized just with the following steps:
 
@@ -30,7 +30,7 @@ Let's say we want to keep Salesforce synchronized with Workday. Then, the integr
 
 And so on...
 			  
-The question for recent changes since a certain moment is nothing but a [poll inbound][1] with a [watermark][2] defined.
+The question for recent changes since a certain moment is nothing but a [poll inbound](http://www.mulesoft.org/documentation/display/current/Poll+Reference) with a [watermark](http://blogs.mulesoft.org/data-synchronizing-made-easy-with-mule-watermarks/) defined.
 ]]>
 		</section>
 		<section id="considerations">
