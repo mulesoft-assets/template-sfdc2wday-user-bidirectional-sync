@@ -22,7 +22,7 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
 			<watermark variable="salesforceLastQueryDate" default-expression="${sfdc.watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]" />
             <processor-chain doc:name="Processor Chain">
 				<expression-component doc:name="lock processing to avoid two syncs occurring at the same time"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
-                <sfdc:query config-ref="Salesforce" query="SELECT Id,Alias, Email, EmailEncodingKey, FirstName, LanguageLocaleKey, LastModifiedById, LastModifiedDate, LastName, LocaleSidKey, ProfileId, TimeZoneSidKey, Username,CommunityNickname,City,PostalCode,Country,State,Street,ExtId__c,Phone,Extension FROM User WHERE LastModifiedDate &gt; #[flowVars['salesforceLastQueryDate']] ORDER BY LastModifiedDate ASC LIMIT 200" doc:name="fetch users from Salesforce"/>
+                <sfdc:query config-ref="Salesforce" query="SELECT Id,Alias, Email, EmailEncodingKey, FirstName, LanguageLocaleKey, LastModifiedById, LastModifiedDate, LastName, LocaleSidKey, ProfileId, TimeZoneSidKey, Username,CommunityNickname,City,PostalCode,Country,State,Street,ExtId__c,Phone,Extension FROM User WHERE LastModifiedDate &gt; #[flowVars['salesforceLastQueryDate']] AND IsActive = true ORDER BY LastModifiedDate ASC LIMIT 200" doc:name="fetch users from Salesforce"/>
             </processor-chain>
 
 		</poll>

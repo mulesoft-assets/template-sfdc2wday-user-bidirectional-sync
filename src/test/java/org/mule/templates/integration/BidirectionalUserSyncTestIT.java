@@ -109,6 +109,7 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		salesforceUser0.put(VAR_LAST_NAME, "ln" + infixSalesforce);
 		salesforceUser0.put(VAR_EMAIL, EMAIL);
 		salesforceUser0.put("ProfileId", SFDC_PROFILE_ID);
+		salesforceUser0.put("IsActive", true);
 		salesforceUser0.put("Alias", "al0Sfdc");
 		salesforceUser0.put("TimeZoneSidKey", "GMT");
 		salesforceUser0.put("LocaleSidKey", "en_US");
