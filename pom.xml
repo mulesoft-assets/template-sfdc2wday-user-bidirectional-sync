@@ -6,17 +6,16 @@
 	<parent>
 		<groupId>org.mule.templates</groupId>
 		<artifactId>templates-tooling-parent-pom</artifactId>
-		<version>1.0.7</version>
+		<version>1.1.6</version>
 	</parent>
 
 	<artifactId>template-sfdc2wday-user-bidirectional-sync</artifactId>
 	<packaging>mule</packaging>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<name>template-sfdc2wday-user-bidirectional-sync Anypoint Template Project</name>
 
 	<properties>
-		<workday.version>3.0.0</workday.version>
-		<sfdc.version>5.4.8</sfdc.version>
+        <wday.int.version>4.2.0</wday.int.version>
 	</properties>
 
 	<build>
@@ -27,9 +26,17 @@
 				<configuration>
 					<copyToAppsDirectory>true</copyToAppsDirectory>
 					<inclusions>
-					<inclusion>
+                    <inclusion>
                             <groupId>org.mule.modules</groupId>
-                            <artifactId>mule-module-workday</artifactId>
+                            <artifactId>mule-module-workday-staffing</artifactId>
+                        </inclusion>
+                    <inclusion>
+                            <groupId>org.mule.modules</groupId>
+                            <artifactId>mule-module-workday-integrations</artifactId>
+                        </inclusion>
+                    <inclusion>
+                            <groupId>org.mule.modules</groupId>
+                            <artifactId>mule-module-workday-humanresources</artifactId>
                         </inclusion>
                     </inclusions>
 				</configuration>
@@ -42,7 +49,7 @@
 		<dependency>
             <groupId>org.mule.modules</groupId>
             <artifactId>mule-module-sfdc</artifactId>
-            <version>5.4.8</version>
+            <version>${sfdc.version}</version>
         </dependency>
 	    <dependency>
 	            <groupId>com.mulesoft.muleesb.modules</groupId>
@@ -62,10 +69,20 @@
 	            <version>${mule.version}</version>
 	            <scope>provided</scope>
 	        </dependency>
-		<dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-workday</artifactId>
-            <version>${workday.version}</version>
+    	<dependency>
+        	    <groupId>org.mule.modules</groupId>
+            	<artifactId>mule-module-workday-staffing</artifactId>
+            	<version>${wday.hr.version}</version>
+        </dependency>
+    	<dependency>
+        	    <groupId>org.mule.modules</groupId>
+            	<artifactId>mule-module-workday-integrations</artifactId>
+            	<version>${wday.int.version}</version>
+        </dependency>
+    	<dependency>
+        	    <groupId>org.mule.modules</groupId>
+            	<artifactId>mule-module-workday-humanresources</artifactId>
+            	<version>${wday.hr.version}</version>
         </dependency>
     </dependencies>
 
