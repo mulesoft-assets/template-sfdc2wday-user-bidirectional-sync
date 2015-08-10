@@ -10,7 +10,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,8 +89,20 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 		System.setProperty("page.size", "1000");
 
 		System.setProperty("poll.startDelayMillis", "8000");
-        System.setProperty("poll.frequencyMillis", "15000");
-		
+        System.setProperty("poll.frequencyMillis", "30000");
+        
+        Date initialDate = new Date(System.currentTimeMillis() - 1000 * 60 * 3);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(initialDate);
+        System.setProperty(
+        		"wday.watermark.default.expression", 
+        		"#[groovy: new GregorianCalendar("
+        				+ cal.get(Calendar.YEAR) + ","
+        				+ cal.get(Calendar.MONTH) + ","
+        				+ cal.get(Calendar.DAY_OF_MONTH) + ","
+        				+ cal.get(Calendar.HOUR_OF_DAY) + ","
+        				+ cal.get(Calendar.MINUTE) + ","
+        				+ cal.get(Calendar.SECOND) + ") ]");
 	}
 
 	@Before
