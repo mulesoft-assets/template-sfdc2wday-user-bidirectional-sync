@@ -9,6 +9,8 @@ package org.mule.templates;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
 import org.mule.api.processor.MessageProcessor;
@@ -29,7 +31,12 @@ public class TransactionLogProcessor implements MessageProcessor{
 		Map<String, String> payload = new HashMap<String, String>();
 		payload.put("LastModifiedById", response.getResponseData().getEvent().get(0).
 				getEventDetailData().getInitiatingPersonReference().getID().get(0).getValue());
-		payload.put("LastModifiedDate", response.getResponseData().getEvent().get(0).getEventDetailData().getCompletedDate().toGregorianCalendar().getTime().toString());
+		
+		DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'");
+		
+		String lastModifiedDate = formatter.print(response.getResponseData().getEvent().get(0).getEventDetailData().getCompletedDate().getTimeInMillis());
+		
+		payload.put("LastModifiedDate", lastModifiedDate);
 		
 		event.getMessage().setPayload(payload);
 		return event;
