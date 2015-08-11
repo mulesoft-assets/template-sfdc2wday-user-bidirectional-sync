@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
-	xmlns:wd-hr="http://www.mulesoft.org/schema/mule/wd-hr" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.7.1"
+<mule xmlns:wd-hr="http://www.mulesoft.org/schema/mule/wd-hr" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:wd-staffing="http://www.mulesoft.org/schema/mule/wd-staffing" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
-http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd-hr/current/mule-wd-hr.xsd
-http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
-
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/wd-staffing http://www.mulesoft.org/schema/mule/wd-staffing/current/mule-wd-staffing.xsd
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
+http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd-hr/current/mule-wd-hr.xsd">
     <sfdc:config name="SalesforceTest" username="${sfdc.test.username}" password="${sfdc.test.password}" securityToken="${sfdc.test.securityToken}" doc:name="Salesforce"/>
 
+	<data-mapper:config name="Pojo_To_ChangePreferredNameRequestType" transformationGraphPath="pojo_to_changepreferrednamerequesttype.grf" doc:name="Pojo_To_ChangePreferredNameRequestType"/>
     <wd-hr:config name="Workday_Human_Resource_Test" doc:name="Workday Human Resource" hrEndpoint="${wday.endpoint}" hrPassword="${wday.integration.password}" hrUser="${wday.integration.user}">
         <wd-hr:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/>
     </wd-hr:config>
@@ -23,7 +27,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
         <logger level="INFO" message="Update User in Salesforce result: #[payload]" doc:name="Logger"/>
     </sub-flow>
     <sub-flow name="queryUserFromSalesforceFlow" doc:name="queryUserFromSalesforceFlow">
-        <sfdc:query-single config-ref="Salesforce" query="SELECT Id, Email, FirstName, LastName, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, CommunityNickname, ExtId__c FROM User WHERE Email = '#[payload['Email']]' and IsActive = true" doc:name="Query user from Salesforce"/>
+        <sfdc:query-single config-ref="Salesforce" query="SELECT Id, Email, FirstName, LastName, Alias, Title, TimeZoneSidKey, LocaleSidKey, EmailEncodingKey, ProfileId, LanguageLocaleKey, CommunityNickname, ExtId__c FROM User WHERE Email = '#[payload['Email']]'" doc:name="Query user from Salesforce"/>
         <logger level="INFO" message="Query user from A result: #[payload]" doc:name="Logger"/>
     </sub-flow>
     <sub-flow name="deleteUserFromSalesforceFlow" doc:name="deleteUserFromSalesforceFlow">
@@ -34,64 +38,11 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
     </sub-flow>
     
     <sub-flow name="queryWorkdayEmployeeFlow" doc:name="queryWorkdayEmployeeFlow">
-        <dw:transform-message doc:name="create GetWorkersRequestType">
-            <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-{
-	requestReferences: {
-		workerReference: [{
-			ID: [{
-				type: "Employee_ID",
-				value: payload
-			}]
-		}]
-	},
-	responseGroup: {
-		includeEmploymentInformation: true,
-		includeOrganizations: true,
-		includePersonalInformation: true,
-		includeReference: true,
-		includeRoles: true,
-		includeTransactionLogData: true,
-		includeUserAccount: true
-	}
-} as :object {
-	class : "com.workday.hr.GetWorkersRequestType"
-}]]></dw:set-payload>
-        </dw:transform-message>
-        <wd-hr:get-workers config-ref="WorkdayHumanResource" doc:name="Workday Human Resource" />
+        <wd-hr:get-workers config-ref="WorkdayHumanResource" doc:name="Workday Human Resource" workersRequest-ref="#[org.mule.templates.WorkersRequest.getWorker(payload)]"/>
     </sub-flow>
     
     <sub-flow name="updateWorkdayEmployee" doc:name="updateWorkdayEmployee">
-        <dw:transform-message doc:name="Pojo To ChangePreferredNameRequestType">
-            <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-{
-	changePreferredNameData: {
-		nameData: {
-			countryReference: {
-				ID: [{
-					type: "ISO_3166-1_Alpha-3_Code",
-					value: "USA"
-				}]
-			},
-			firstName: payload.givenName,
-			lastName: payload.familyName
-		},
-		workerReference: {
-			ID: [{
-				type: "Employee_ID",
-				value: payload.id
-			}]
-		}
-	}
-} as :object {
-	class : "com.workday.hr.ChangePreferredNameRequestType"
-}]]></dw:set-payload>
-        </dw:transform-message>
-
+        <data-mapper:transform config-ref="Pojo_To_ChangePreferredNameRequestType" doc:name="Pojo To ChangePreferredNameRequestType"/>
         <wd-hr:change-preferred-name config-ref="Workday_Human_Resource_Test" doc:name="Workday Human Resource"/>
     </sub-flow>
 
