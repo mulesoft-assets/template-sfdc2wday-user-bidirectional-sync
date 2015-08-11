@@ -39,7 +39,7 @@ Let's say we want to keep Salesforce synchronized with Workday. Then, the integr
 2. For each of the updates fetched in the previous step (1.), ask Workday:
 > *Does the update received from A should be applied?*
 
-3. If the answer for the previous question (2.) is *Yes*, then *upsert* (create or update depending each particular case) Workday with the belonging change
+3. If Database answer for the previous question (2.) is *Yes*, then *upsert* (create or update depending each particular case) Workday with the belonging change
 
 4. Repeat previous steps (1. to 3.) the other way around (using Workday as source and Salesforce as the target)
 
@@ -176,20 +176,13 @@ Mule Studio provides you with really easy way to deploy your Template directly t
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 In order to use this Mule Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 ### Application configuration
-#### Properties to be used across all the environments
-
-+ poll.frequencyMillis `10000`
-+ poll.startDelayMillis `500`
-
 #### Properties to be used on the development environment
 
 #### Workday Connector configuration
 + wday.user `user@company`
 + wday.password `secret`
-+ wday.endpoint=https://impl-cc.workday.com/ccx/service/company/Human_Resources/v23.1
++ wday.endpoint=https://impl-cc.workday.com/ccx/service/company/Human_Resources/v21.1
 + wday.integration.user.id `72d1073ba8f51050e3c83a48d7a9ead6`
-+ wday.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000)]`
-
 + wday.country `USA`
 + wday.state `USA-CA`
 + wday.organization`SUPERVISORY_ORGANIZATION-1-435`
@@ -203,7 +196,7 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sfdc.username `user@company.com`
 + sfdc.password `secret`
 + sfdc.securityToken `h0fcC2Y7dnuH7ELk9BhoW0xu`
-+ sfdc.url `https://login.salesforce.com/services/Soap/u/32.0`
++ sfdc.url `https://login.salesforce.com/services/Soap/u/30.0`
 + sfdc.integration.user.id `00520000003LtvGAAS`
 + sfdc.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000).format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZone.getTimeZone('GMT'))]`
 + sfdc.profileId `00e200000015oKFAAY`

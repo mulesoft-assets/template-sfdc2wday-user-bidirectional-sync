@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
-	xmlns:wd-hr="http://www.mulesoft.org/schema/mule/wd-hr" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+<mule xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:wd-hr="http://www.mulesoft.org/schema/mule/wd-hr" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
-	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.7.1"
+	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd-hr/current/mule-wd-hr.xsd
-http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd">
     
     <flow name="triggerSyncFromSalesforceFlow" doc:name="triggerSyncFromSalesforceFlow" processingStrategy="synchronous" initialState="started">
 		<poll doc:name="Poll">
@@ -25,48 +26,22 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
             </processor-chain>
 
 		</poll>
-        <batch:execute name="fromSalesforceToWorkdayBatch" doc:name="trigger fromSalesforceToWorkdayBatch"/>
+        <batch:execute name="fromSalesforceToWorkdayBatch" doc:name="trigger fromSalesforceToDBBatch"/>
 		<exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="catch Exception and call defaultChoiceExceptionStrategy"/>
 	</flow>
     
 	<flow name="triggerSyncFromWorkdayFlow" doc:name="triggerSyncFromWorkdayFlow" processingStrategy="synchronous" >
    		<poll doc:name="Poll">
 			<fixed-frequency-scheduler frequency="${poll.frequencyMillis}" startDelay="${poll.startDelayMillis}" />
-			<watermark variable="WorkdayLastQueryDate" default-expression="${wday.watermark.default.expression}" update-expression="#[flowVars.updatedThrough]"/>
+			<watermark variable="WorkdayLastQueryDate" default-expression="${watermark.default.expression}" update-expression="#[ new java.util.Date()]"/>
             <processor-chain doc:name="Processor Chain">
                 <expression-component doc:name="lock processing to avoid two syncs occurring at the same time"><![CDATA[app.registry['PollSynchronizer'].lock();]]></expression-component>
-                <dw:transform-message doc:name="Create GetWorkersRequestType">
-                    <dw:set-payload><![CDATA[%dw 1.0
-  %output application/java 
-  ---
-  ({ 
-  	responseGroup: { 
-  		includeRoles: true, 
-  		includePersonalInformation: true, 
-  		includeOrganizations: true, 
-  		includeEmploymentInformation: true, 
-  		includeUserAccount: true, 
-  		includeTransactionLogData: true, 
-  		includeReference: true 
-  	}, 
-  	requestCriteria: { 
-  		excludeInactiveWorkers: true, 
-  		transactionLogCriteriaData: [{ 
-  			transactionDateRangeData: { 
-  				updatedFrom: flowVars.WorkdayLastQueryDate,
-  				updatedThrough: now - |PT3S|
-  			} 
-  		}] 
-  	} 
-  } as :object { class: "com.workday.hr.GetWorkersRequestType"})]]></dw:set-payload> 
-                </dw:transform-message>
-                <wd-hr:get-workers config-ref="WorkdayHumanResource"  doc:name="Workday Human Resource"/>
+                <wd-hr:get-workers config-ref="WorkdayHumanResource" workersRequest-ref="#[org.mule.templates.WorkersRequest.create(WorkdayLastQueryDate, ${poll.frequencyMillis}, ${poll.offset})]" doc:name="Workday Human Resource"/>
                 <logger message="fetching..#[flowVars['WorkdayLastQueryDate']]" level="INFO" doc:name="Logger"/>
 
             </processor-chain>
 
 		</poll>
-		<set-variable doc:name="Set updatedThrough" value="#[payload.getRequestCriteria().getTransactionLogCriteriaData().get(0).getTransactionDateRangeData().getUpdatedThrough()]" variableName="updatedThrough" />
         <choice doc:name="Choice"> 
             <when expression="payload.responseData == null">
                 <expression-component doc:name="release lock"><![CDATA[#[app.registry['PollSynchronizer'].unlock()]]]></expression-component>

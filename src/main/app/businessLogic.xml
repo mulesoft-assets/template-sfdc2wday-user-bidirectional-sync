@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
-	xmlns:wd-integration="http://www.mulesoft.org/schema/mule/wd-integration"
-	xmlns:wd-staffing="http://www.mulesoft.org/schema/mule/wd-staffing"
-	xmlns:wd-hr="http://www.mulesoft.org/schema/mule/wd-hr" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+<mule xmlns:wd-integration="http://www.mulesoft.org/schema/mule/wd-integration" xmlns:wd-staffing="http://www.mulesoft.org/schema/mule/wd-staffing" xmlns:wd-hr="http://www.mulesoft.org/schema/mule/wd-hr" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:objectstore="http://www.mulesoft.org/schema/mule/objectstore"
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -11,13 +8,20 @@
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/objectstore http://www.mulesoft.org/schema/mule/objectstore/current/mule-objectstore.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
 http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd-hr/current/mule-wd-hr.xsd
 http://www.mulesoft.org/schema/mule/wd-staffing http://www.mulesoft.org/schema/mule/wd-staffing/current/mule-wd-staffing.xsd
-http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schema/mule/wd-integration/current/mule-wd-integration.xsd
-http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd"
-	version="EE-3.7.1">	
+http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schema/mule/wd-integration/current/mule-wd-integration.xsd" version="EE-3.5.1">
+    <data-mapper:config name="User_To_EmployeePersonalInfoUpdateType" transformationGraphPath="user_to_employeepersonalinfoupdatetype.grf" doc:name="User_To_EmployeePersonalInfoUpdateType"/>
+    <data-mapper:config name="User_To_HireEmployeeRequestType_1" transformationGraphPath="user_to_hireemployeerequesttype_1.grf" doc:name="User_To_HireEmployeeRequestType_1"/>
+	<data-mapper:config name="List_WorkerType__To_List_User1" transformationGraphPath="list_workertype__to_user.grf" doc:name="List_WorkerType__To_User"/>
+    <data-mapper:config name="User_To_MaintainContactInformationForPersonEventRequestType" transformationGraphPath="user_to_maintaincontactinformationforpersoneventrequesttype.grf" doc:name="User_To_MaintainContactInformationForPersonEventRequestType"/>
+    <data-mapper:config name="User_To_ChangePreferredNameRequestType" transformationGraphPath="user_to_changepreferrednamerequesttype.grf" doc:name="User_To_ChangePreferredNameRequestType"/>
+	
     
     <batch:job name="fromSalesforceToWorkdayBatch" max-failed-records="-1">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
@@ -27,425 +31,66 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
                 <logger message="Worker to be upserted: #[payload]" level="INFO" doc:name="log the Salesforce user"/>
                 <batch:set-record-variable variableName="sfdcUser" value="#[payload]" doc:name="store Salesforce user"/>
                 <enricher source="#[payload]" target="#[recordVars['userInTargetInstance']]" doc:name="store user">
-                    <processor-chain doc:name="Processor Chain">
-                        <dw:transform-message doc:name="create GetWorkersRequestType">
-                            <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-{
-	requestReferences: {
-		workerReference: [{
-			ID: [{
-				type: "Employee_ID",
-				value: payload.ExtId__c
-			}]
-		}]
-	},
-	responseGroup: {
-		includeEmploymentInformation: true,
-		includeOrganizations: true,
-		includePersonalInformation: true,
-		includeReference: true,
-		includeRoles: true,
-		includeTransactionLogData: true,
-		includeUserAccount: true
-	}
-} as :object {
-	class : "com.workday.hr.GetWorkersRequestType"
-}]]></dw:set-payload>
-                        </dw:transform-message>
-                        <wd-hr:get-workers config-ref="WorkdayHumanResource"  doc:name="query Workday for the worker"/>
-                    </processor-chain>
+                    <wd-hr:get-workers config-ref="WorkdayHumanResource"  doc:name="query Workday for the worker" workersRequest-ref="#[org.mule.templates.WorkersRequest.getWorker(payload['ExtId__c'])]"/>
                 </enricher>
 
             </batch:step>
             <batch:step name="GetLastModifiedDateInWorkday" accept-expression="(recordVars['userInTargetInstance'] != null)">
                 <enricher source="#[payload]" target="#[recordVars['LastModifiedDate']]" doc:name="store the value in 'recordVars['LastModifiedDate']'">
                     <processor-chain doc:name="Processor Chain">
-                        <dw:transform-message doc:name="create GetWorkersRequestType">
-                            <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-{
-	requestCriteria: {
-		transactionLogCriteriaData: [{
-			transactionDateRangeData: {
-				updatedFrom: (now - |PT13S|) as :datetime,
-				updatedThrough: (now - |PT3S|) as :datetime
-			}
-		}]
-	} ,
-	requestReferences: {
-		workerReference: [{
-			ID: [{
-				type: "Employee_ID",
-				value: payload.ExtId__c
-			}]
-		}]
-	},
-	responseGroup: {
-		includeEmploymentInformation: true,
-		includeOrganizations: true,
-		includePersonalInformation: true,
-		includeReference: true,
-		includeRoles: true,
-		includeTransactionLogData: true,
-		includeUserAccount: true
-	}
-} as :object {
-	class : "com.workday.hr.GetWorkersRequestType"
-}]]></dw:set-payload>
-                        </dw:transform-message>
-
-                        <wd-hr:get-workers config-ref="WorkdayHumanResource"  doc:name="get Worker Events" />
+                        <wd-hr:get-workers config-ref="WorkdayHumanResource"  doc:name="get Worker Events" workersRequest-ref="#[org.mule.templates.WorkersRequest.getWorkerEvents(payload['ExtId__c'], ${poll.frequencyMillis}, ${poll.offset})]"/>
                         <custom-transformer class="org.mule.templates.EventHistoryProcessor" doc:name="iterate through events"/>
                     </processor-chain>
                 </enricher>
 
             </batch:step>
             <batch:step name="insertWorkerInWorkDay" accept-policy="ONLY_FAILURES">
-                <dw:transform-message doc:name="User To HireEmployeeRequestType">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-{
-	businessProcessParameters: {
-		autoComplete: true
-	},
-	hireEmployeeData: {
-		applicantData: {
-			personalData: {
-				contactData: {
-					addressData: [{
-						addressLineData: [{
-							type: "ADDRESS_LINE_1",
-							value: payload.Address
-						}],
-						countryReference: {
-							ID: [{
-								type: "ISO_3166-1_Alpha-3_Code",
-								value: p('wday.country')
-							}]
-						},
-						countryRegionReference: {
-							ID: [{
-								type: "Country_Region_ID",
-								value: p('wday.state')
-							}]
-						},
-						effectiveDate: (payload.CreatedDate as :date) when (payload.CreatedDate != null) otherwise null,
-						municipality: payload.City when (payload.City != null) otherwise p('wday.city'),
-						postalCode: payload.PostalCode when (payload.PostalCode != null) otherwise p('wday.postalCode'),
-						usageData: [{
-							public: false,
-							typeData: [{
-								primary: true,
-								typeReference: {
-									ID: [{
-										type: "Communication_Usage_Type_ID",
-										value: "HOME"
-									}]
-								}
-							}]
-						}]
-					}],
-					emailAddressData: [{
-						emailAddress: payload.Email,
-						usageData: [{
-							public: true,
-							typeData: [{
-								primary: true,
-								typeReference: {
-									ID: [{
-										type: "Communication_Usage_Type_ID",
-										value: "HOME"
-									}]
-								}
-							}]
-						}]
-					}],
-					phoneData: [{
-						phoneDeviceTypeReference: {
-							ID: [{
-								type: "Phone_Device_Type_ID",
-								value: "1063.5"
-							}]
-						},
-						phoneNumber: payload.Phone,
-						usageData: [{
-							public: true,
-							typeData: [{
-								primary: true,
-								typeReference: {
-									ID: [{
-										type: "Communication_Usage_Type_ID",
-										value: "HOME"
-									}]
-								}
-							}]
-						}]
-					}]
-				},
-				nameData: {
-					legalNameData: {
-						nameDetailData: {
-							countryReference: {
-								ID: [{
-									type: "ISO_3166-1_Alpha-3_Code",
-									value: p('wday.country')
-								}]
-							},
-							firstName: payload.FirstName,
-							lastName: payload.LastName
-						}
-					}
-				}
-			}
-		},
-		createWorkdayAccountSubProcess: {
-			businessSubProcessParameters: {
-				skip: true
-			}
-		},
-		hireEmployeeEventData: {
-			employeeExternalIDData: {
-				externalID: [{
-					externalID: payload.Id,
-					systemID: "Salesforce - Chatter"
-				}]
-			},
-			employeeTypeReference: {
-				ID: [{
-					type: "Employee_Type_ID",
-					value: "Regular"
-				}]
-			},
-			hireReasonReference: {
-				ID: [{
-					type: "General_Event_Subcategory_ID",
-					value: "Hire_Employee_New_Hire_Fill_Vacancy"
-				}]
-			},
-			positionDetails: {
-				jobProfileReference: {
-					ID: [{
-						type: "Job_Profile_ID",
-						value: p('wday.jobprofileId')
-					}]
-				},
-				locationReference: {
-					ID: [{
-						type: "Location_ID",
-						value: p('wday.location')
-					}]
-				},
-				payRateTypeReference: {
-					ID: [{
-						type: "Pay_Rate_Type_ID",
-						value: "Salary"
-					}]
-				},
-				positionExternalIDData: {
-					externalID: [{
-						externalID: payload.Id,
-						systemID: "Salesforce - Chatter"
-					}]
-				},
-				positionTimeTypeReference: {
-					ID: [{
-						type: "Position_Time_Type_ID",
-						value: "Full_time"
-					}]
-				}
-			}
-		},
-		organizationReference: {
-			ID: [{
-				type: "Organization_Reference_ID",
-				value: p('wday.organization')
-			}]
-		},
-		proposeCompensationForHireSubProcess: {
-			businessSubProcessParameters: {
-				autoComplete: true
-			},
-			proposeCompensationForHireData: {
-				payPlanData: {
-					payPlanSubData: [{
-						amount: 100,
-						currencyReference: {
-							ID: [{
-								type: "Currency_ID",
-								value: p('wday.currency')
-							}]
-						},
-						frequencyReference: {
-							ID: [{
-								type: "Frequency_ID",
-								value: "Annual"
-							}]
-						},
-						payPlanReference: {
-							ID: [{
-								type: "Compensation_Plan_ID",
-								value: "SALARY_Hourly_Plan"
-							}]
-						}
-					}],
-					replace: false
-				}
-			}
-		}
-	},
-	version: "v23.1"
-} as :object {
-	class : "com.workday.staffing.HireEmployeeRequestType"
-}]]></dw:set-payload>
-                </dw:transform-message>
-
+                <data-mapper:transform doc:name="User To HireEmployeeRequestType" config-ref="User_To_HireEmployeeRequestType_1">
+                    <data-mapper:input-arguments>
+                        <data-mapper:input-argument key="country">${wday.country}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="postalCode">${wday.postalCode}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="state">${wday.state}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="city">${wday.city}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="location">${wday.location}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="organization">${wday.organization}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="jobprofile">${wday.jobprofileId}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="currency">${wday.currency}</data-mapper:input-argument>
+                    </data-mapper:input-arguments>
+                </data-mapper:transform>
 
         		<wd-staffing:hire-employee config-ref="Workday_Staffing" doc:name="create Workday employee"/>
-
-				<dw:transform-message doc:name="Add external ID to Salesforce object">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-[recordVars.sfdcUser 
-- 'LastModifiedDate'
-- 'LastModifiedById'
-- 'type'
-++ ExtId__c: payload.employeeReference.ID[1].value
-]]]></dw:set-payload>
-                </dw:transform-message>
-
-
+                <batch:set-record-variable variableName="workDayId" value="#[payload.employeeReference.getID().get(1).getValue()]" doc:name="store Worker Id"/>
+                <set-payload value="#[recordVars['sfdcUser']]" doc:name="set Payload to Salesforce user"/>
+                <expression-component doc:name="prepare for upsert"><![CDATA[payload.remove('LastModifiedById');
+payload.remove('LastModifiedDate');
+payload['ExtId__c'] = recordVars['workDayId'];
+list = new java.util.ArrayList();
+list.add(payload);
+payload = list;]]></expression-component>
                 <sfdc:upsert config-ref="Salesforce" externalIdFieldName="Id" type="User" doc:name="update Salesforce user with Ext. Id">
                     <sfdc:objects ref="#[payload]"/>
                 </sfdc:upsert>
 
             </batch:step>
-            <batch:step name="updateContactInfoInWorkDayStep" accept-expression="recordVars['LastModifiedDate'] == null || (org.mule.templates.DateUtils.isAfter(payload['LastModifiedDate'], recordVars['LastModifiedDate'] == null ? null : recordVars['LastModifiedDate']) &amp;&amp; '${sfdc.integration.user.id}' != payload.get('LastModifiedById'))">
-                <dw:transform-message doc:name="User To MaintainContactInformationForPersonEventRequestType">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-{
-	maintainContactInformationData: {
-		effectiveDate: payload.LastModifiedDate as :datetime,
-		workerContactInformationData: {
-			addressData: [{
-				addressLineData: [{
-					type: "ADDRESS_LINE_1",
-					value: payload.Street when payload.Street != null otherwise p('wday.location')
-				}],
-				countryReference: {
-					ID: [{
-						type: "ISO_3166-1_Alpha-3_Code",
-						value: payload.Country when payload.Country != null otherwise p('wday.country')
-					}]
-				},
-				countryRegionReference: {
-					ID: [{
-						type: "Country_Region_ID",
-						value: payload.State when payload.State != null otherwise p('wday.state')
-					}]
-				},
-				effectiveDate: payload.LastModifiedDate as :datetime,
-				municipality: payload.City when payload.City != null otherwise p('wday.city'),
-				postalCode: payload.PostalCode when payload.PostalCode != null  otherwise p('wday.postalCode'),
-				usageData: [{
-					public: false,
-					typeData: [{
-						primary: true,
-						typeReference: {
-							ID: [{
-								type: "Communication_Usage_Type_ID",
-								value: "HOME"
-							}]
-						}
-					}]
-				}]
-			}],
-			emailAddressData: [{
-				emailAddress: payload.Email,
-				usageData: [{
-					public: true,
-					typeData: [{
-						primary: true,
-						typeReference: {
-							ID: [{
-								type: "Communication_Usage_Type_ID",
-								value: "HOME"
-							}]
-						}
-					}]
-				}]
-			}],
-			phoneData: [{
-				countryISOCode: payload.Country when payload.Country != null otherwise p('wday.country'),
-				phoneDeviceTypeReference: {
-					ID: [{
-						type: "Phone_Device_Type_ID",
-						value: "1063.5"
-					}]
-				},
-				phoneExtension: payload.Extension,
-				phoneNumber: payload.Phone,
-				usageData: [{
-					public: true,
-					typeData: [{
-						primary: true,
-						typeReference: {
-							ID: [{
-								type: "Communication_Usage_Type_ID",
-								value: "HOME"
-							}]
-						}
-					}]
-				}]
-			}]
-		},
-		workerReference: {
-			ID: [{
-				type: "Employee_ID",
-				value: payload.ExtId__c
-			}]
-		}
-	}
-} as :object {
-	class : "com.workday.hr.MaintainContactInformationForPersonEventRequestType"
-}]]></dw:set-payload>
-                </dw:transform-message>
+            <batch:step name="updateContactInfoInWorkDayStep" accept-expression="recordVars['LastModifiedDate'] == null || (org.mule.templates.DateUtils.isAfter(payload['LastModifiedDate'], recordVars['LastModifiedDate'] is NullPayload ? null : recordVars['LastModifiedDate']) &amp;&amp; '${sfdc.integration.user.id}' != payload.get('LastModifiedById'))">
+
+                <data-mapper:transform config-ref="User_To_MaintainContactInformationForPersonEventRequestType" doc:name="User To MaintainContactInformationForPersonEventRequestType">
+                    <data-mapper:input-arguments>
+                        <data-mapper:input-argument key="postalCode">${wday.postalCode}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="city">${wday.city}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="country">${wday.country}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="location">${wday.location}</data-mapper:input-argument>
+                        <data-mapper:input-argument key="state">${wday.state}</data-mapper:input-argument>
+                    </data-mapper:input-arguments>
+                </data-mapper:transform>
                 <wd-hr:maintain-contact-information config-ref="WorkdayHumanResource" doc:name="update Contact Information"/>
 
-                <dw:transform-message doc:name="User To ChangePreferredNameRequestType">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
-%var user = recordVars.sfdcUser
----
-{
-	changePreferredNameData: {
-		nameData: {
-			countryReference: {
-				ID: [{
-					type: "ISO_3166-1_Alpha-3_Code",
-					value: user.Country when user.Country != null otherwise p('wday.country')
-				}]
-			},
-			firstName: user.FirstName,
-			lastName: user.LastName
-		},
-		workerReference: {
-			ID: [{
-				type: "Employee_ID",
-				value: user.ExtId__c
-			}]
-		}
-	}
-} as :object {
-	class : "com.workday.hr.ChangePreferredNameRequestType"
-}]]></dw:set-payload>
-                </dw:transform-message>
+                <set-payload value="#[recordVars['sfdcUser']]" doc:name="set Payload to Salesforce User"/>
+                <data-mapper:transform config-ref="User_To_ChangePreferredNameRequestType" doc:name="User To ChangePreferredNameRequestType">
+                    <data-mapper:input-arguments>
+                        <data-mapper:input-argument key="country">${wday.country}</data-mapper:input-argument>
+                    </data-mapper:input-arguments>
+                </data-mapper:transform>
                 <wd-hr:change-preferred-name config-ref="WorkdayHumanResource" doc:name="update First/Last Name"/>
 
             </batch:step>
@@ -459,73 +104,55 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:process-records>
             <batch:step name="GetLastEvent">
-
+                <batch:set-record-variable variableName="workDayId" value="#[payload.workerReference.getID().get(1).getValue()]" doc:name="store Workday Id"/>
                 <enricher source="payload" target="#[recordVars['lastEvent']]" doc:name="store the value in 'recordVars['lastEvent']'">
                     <processor-chain doc:name="Processor Chain">
-                        <dw:transform-message doc:name="create GetEventDetailsRequestType">
-                            <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-{
-	requestReferences: {
-		eventReference: [{
-			ID: [{
-				type: payload.workerData.transactionLogEntryData.transactionLogEntry[0].transactionLogReference.ID[0].type!,
-				value: payload.workerData.transactionLogEntryData.transactionLogEntry[0].transactionLogReference.ID[0].value!
-			}]
-		}]
-	}
-} as :object {
-	class : "com.workday.integrations.GetEventDetailsRequestType"
-}]]></dw:set-payload>
-                        </dw:transform-message>
-
-                        <wd-integration:get-event-detail config-ref="Workday_Integrations"  doc:name="query for the last event"/>
+                        <wd-integration:get-event-detail config-ref="Workday_Integrations" eventDetailRequest-ref="#[org.mule.templates.EventDetailRequest.create(payload)]" doc:name="query for the last event"/>
                         <custom-transformer class="org.mule.templates.TransactionLogProcessor" doc:name="iterate through transaction logs"/>
                     </processor-chain>
                 </enricher>
             </batch:step>
+            <batch:step name="MapToSalesforce">
+                <data-mapper:transform config-ref="List_WorkerType__To_List_User1" doc:name="map Workday Worker To Salesforce User"/>
+                <expression-component doc:name="setup Salesforce User"><![CDATA[ payload = payload[0];
+ payload.put("LastModifiedDate", recordVars['lastEvent']['LastModifiedDate']);
+ payload.put("LastModifiedById", recordVars['lastEvent']['LastModifiedById']);
+ payload.put('Alias', payload['Alias'] == null ? (payload['FirstName'].substring(0, 1) + payload['LastName'].substring(0, payload['LastName'].length() < 7 ? payload['LastName'].length() : 7) ) : payload['Alias'].substring(0, payload['Alias'].length() < 8 ? payload['Alias'].length() : 8));
 
+ payload.put('ProfileId', '${sfdc.profileId}'); 
+
+ payload.put('Username',  payload['Username'] == null ? payload['Email'] + '.target' : payload['Username']); 
+
+ // We remove these fields as they are internally managed by SalesForce and it is not valid to create/update an object with them 
+ payload.remove('type'); 
+ payload.remove('LastModifiedDate');
+
+ payload.put('LocaleSidKey', payload['LocaleSidKey'] == null ? '${sfdc.localeSidKey}' : payload['LocaleSidKey']);
+ payload.put('LanguageLocaleKey', payload['LanguageLocaleKey'] == null ? '${sfdc.languageLocaleKey}' : payload['LanguageLocaleKey']);
+ payload.put('TimeZoneSidKey', payload['TimeZoneSidKey'] == null ? '${sfdc.timeZoneSidKey}' : payload['TimeZoneSidKey']);
+ payload.put('EmailEncodingKey', payload['EmailEncodingKey'] == null ? '${sfdc.emailEncodingKey}' : payload['EmailEncodingKey']);
+
+]]></expression-component>
+                <batch:set-record-variable variableName="email" value="#[payload['Email']]" doc:name="store email"/>
+            </batch:step>
             <batch:step name="getUserInSalesforceStep">
                 <enricher source="#[payload]" target="#[recordVars['userInTargetInstance']]" doc:name="store the value in recordVars['userInTargetInstance']">
-                    <sfdc:query-single config-ref="Salesforce" query="dsql:SELECT Id, Email, LastModifiedDate FROM User WHERE (Email = '#[payload.getWorkerData().getPersonalData().getContactData().getEmailAddressData().get(0).getEmailAddress()]')" doc:name="query user from Salesforce"/>
+                    <sfdc:query-single config-ref="Salesforce" query="SELECT Id, Email, LastModifiedDate FROM User WHERE (Email = '#[payload['Email']]')" doc:name="query user from Salesforce"/>
                 </enricher>
-
             </batch:step>
-            <batch:step name="upsertUserInSalesforceStep" accept-expression="recordVars['userInTargetInstance'] == null ? true : org.mule.templates.date.DateUtils.ISOStringDateToDateTime(recordVars['lastEvent']['LastModifiedDate']).isAfter(org.mule.templates.date.DateUtils.ISOStringDateToDateTime(recordVars['userInTargetInstance']['LastModifiedDate'])) &amp;&amp; '${wday.integration.user.id}' != recordVars['lastEvent']['LastModifiedById']">
-                <dw:transform-message doc:name="map Workday Worker To Salesforce User">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-{
-	FirstName: payload.workerData.personalData.nameData.preferredNameData.nameDetailData.firstName,
-	LastName: payload.workerData.personalData.nameData.preferredNameData.nameDetailData.lastName,
-	City: payload.workerData.personalData.contactData.addressData[-1].municipality,
-	PostalCode: payload.workerData.personalData.contactData.addressData[-1].postalCode,
-	State: payload.workerData.personalData.contactData.addressData[-1].countryRegionReference[-1].ID[2].value,
-	Country: payload.workerData.personalData.contactData.addressData[-1].countryReference.ID[3].value,
-	Email: payload.workerData.personalData.contactData.emailAddressData[-1].emailAddress,
-	Street: payload.workerData.personalData.contactData.addressData[-1].addressLineData[-1].value,
-	Phone: payload.workerData.personalData.contactData.phoneData[-1].phoneNumber,
-	Extension: payload.workerData.personalData.contactData.phoneData[-1].phoneExtension,
-	ProfileId: p('sfdc.profileId'),
-	(Id: recordVars.userInTargetInstance.Id) when recordVars.userInTargetInstance != null, 
-	
-	// TODO - Each Username should be UNIQUE even between different sandboxes of a single instance 
- 	// If you are trying this kick with one instance and multiple sandboxes, please make sure that the target username is not the same as the original as a duplicated username error will come up 
-	Username: (payload.workerData.userAccountData.userName) when (payload.workerData.userAccountData != null and payload.workerData.userAccountData.userName != null) otherwise payload.workerData.personalData.contactData.emailAddressData[-1].emailAddress ++ ".target",
-	
-	TimeZoneSidKey: p('sfdc.timeZoneSidKey'),
-	LocaleSidKey: payload.workerData.userAccountData.localeReference.ID[-1].value when (payload.workerData.userAccountData != null and payload.workerData.userAccountData.localeReference != null) otherwise p('sfdc.localeSidKey'),
-	EmailEncodingKey: p('sfdc.emailEncodingKey'),
-	LanguageLocaleKey: payload.workerData.userAccountData.defaultDisplayLanguageReference.ID[-1].value when (payload.workerData.userAccountData != null and payload.workerData.userAccountData.defaultDisplayLanguageReference != null) otherwise p('sfdc.languageLocaleKey'),
-	CommunityNickname: "CN_" ++ payload.workerData.personalData.contactData.emailAddressData[-1].emailAddress,
-	Alias: payload.workerData.personalData.nameData.preferredNameData.nameDetailData.firstName[0..2] ++ payload.workerData.personalData.nameData.preferredNameData.nameDetailData.lastName[0..3],
- 	
- 	ExtId__c: payload.workerReference.ID[1].value,
- 	IsActive: true
-}]]></dw:set-payload>
-                </dw:transform-message>
+            <batch:step name="upsertUserInSalesforceStep" accept-expression="recordVars['userInTargetInstance'] is NullPayload ? true : org.mule.templates.date.DateUtils.dateToDateTime(payload['LastModifiedDate']).isAfter(org.mule.templates.date.DateUtils.ISOStringDateToDateTime(recordVars['userInTargetInstance']['LastModifiedDate'])) &amp;&amp; '${wday.integration.user.id}' != payload.get('LastModifiedById')">
+                <expression-component doc:name="prepare user for upsert"><![CDATA[payload.put('ExtId__c', recordVars['workDayId']);
+payload.remove('LastModifiedDate'); 
+   payload.remove('LastModifiedById');  
+
+   if(!(recordVars['userInTargetInstance'] is NullPayload)) { 
+   		payload.put('Id',recordVars['userInTargetInstance'].get('Id')); 
+   } 
+
+   // We map the profile IDs defined in the properties file  
+   payload.put('ProfileId', '${sfdc.profileId}');  
+     
+   ]]></expression-component>
                 <logger message="User to be upserted: #[payload]" level="INFO" doc:name="log the Salesforce user"/>
                 <batch:commit size="200" doc:name="Batch Commit">
                     <sfdc:upsert config-ref="Salesforce" externalIdFieldName="Id" type="User" doc:name="upsert user in Salesforce">
