@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
 	xmlns:wd-integration="http://www.mulesoft.org/schema/mule/wd-integration"
 	xmlns:wd-staffing="http://www.mulesoft.org/schema/mule/wd-staffing"
 	xmlns:wd-hr="http://www.mulesoft.org/schema/mule/wd-hr" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd
 http://www.mulesoft.org/schema/mule/wd-staffing http://www.mulesoft.org/schema/mule/wd-staffing/current/mule-wd-staffing.xsd
 http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schema/mule/wd-integration/current/mule-wd-integration.xsd
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd"
-	version="EE-3.7.1">	
+	version="EE-3.7.2">	
     
     <batch:job name="fromSalesforceToWorkdayBatch" max-failed-records="-1">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
@@ -70,8 +70,8 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 	requestCriteria: {
 		transactionLogCriteriaData: [{
 			transactionDateRangeData: {
-				updatedFrom: (now - |PT13S|) as :datetime,
-				updatedThrough: (now - |PT3S|) as :datetime
+				updatedFrom: (now - |PT13S|) as :datetime {class: "java.util.Calendar"},
+				updatedThrough: (now - |PT3S|) as :datetime {class: "java.util.Calendar"}
 			}
 		}]
 	} ,
@@ -133,7 +133,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 								value: p('wday.state')
 							}]
 						},
-						effectiveDate: (payload.CreatedDate as :date) when (payload.CreatedDate != null) otherwise null,
+						effectiveDate: (payload.CreatedDate as :date {class: "java.util.Calendar"}) when (payload.CreatedDate != null) otherwise null,
 						municipality: payload.City when (payload.City != null) otherwise p('wday.city'),
 						postalCode: payload.PostalCode when (payload.PostalCode != null) otherwise p('wday.postalCode'),
 						usageData: [{
@@ -331,7 +331,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 ---
 {
 	maintainContactInformationData: {
-		effectiveDate: payload.LastModifiedDate as :datetime,
+		effectiveDate: payload.LastModifiedDate as :datetime {class: "java.util.Calendar"},
 		workerContactInformationData: {
 			addressData: [{
 				addressLineData: [{
@@ -350,7 +350,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 						value: payload.State when payload.State != null otherwise p('wday.state')
 					}]
 				},
-				effectiveDate: payload.LastModifiedDate as :datetime,
+				effectiveDate: payload.LastModifiedDate as :datetime {class: "java.util.Calendar"},
 				municipality: payload.City when payload.City != null otherwise p('wday.city'),
 				postalCode: payload.PostalCode when payload.PostalCode != null  otherwise p('wday.postalCode'),
 				usageData: [{
@@ -511,7 +511,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 	ProfileId: p('sfdc.profileId'),
 	(Id: recordVars.userInTargetInstance.Id) when recordVars.userInTargetInstance != null, 
 	
-	// TODO - Each Username should be UNIQUE even between different sandboxes of a single instance 
+	// Each Username should be UNIQUE even between different sandboxes of a single instance 
  	// If you are trying this kick with one instance and multiple sandboxes, please make sure that the target username is not the same as the original as a duplicated username error will come up 
 	Username: (payload.workerData.userAccountData.userName) when (payload.workerData.userAccountData != null and payload.workerData.userAccountData.userName != null) otherwise payload.workerData.personalData.contactData.emailAddressData[-1].emailAddress ++ ".target",
 	
