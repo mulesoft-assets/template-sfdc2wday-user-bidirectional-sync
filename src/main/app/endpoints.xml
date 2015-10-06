@@ -5,7 +5,7 @@
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
 	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.7.1"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.7.2"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -53,8 +53,8 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
   		excludeInactiveWorkers: true, 
   		transactionLogCriteriaData: [{ 
   			transactionDateRangeData: { 
-  				updatedFrom: flowVars.WorkdayLastQueryDate,
-  				updatedThrough: now - |PT3S|
+  				updatedFrom: flowVars.WorkdayLastQueryDate as :datetime {class: "java.util.Calendar"},
+  				updatedThrough: (now - |PT3S|) as :datetime {class: "java.util.Calendar"}
   			} 
   		}] 
   	} 

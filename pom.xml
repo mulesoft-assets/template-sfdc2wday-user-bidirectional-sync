@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>org.mule.templates</groupId>
 		<artifactId>templates-tooling-parent-pom</artifactId>
-		<version>1.2.2</version>
+		<version>1.2.3</version>
 	</parent>
 
 	<artifactId>template-sfdc2wday-user-bidirectional-sync</artifactId>
 	<packaging>mule</packaging>
-	<version>1.2.0-SNAPSHOT</version>
+	<version>1.2.1-SNAPSHOT</version>
 	<name>template-sfdc2wday-user-bidirectional-sync Anypoint Template Project</name>
 
 	<properties>
