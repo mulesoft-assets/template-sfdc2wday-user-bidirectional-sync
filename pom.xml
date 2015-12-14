@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.mule.templates</groupId>
 		<artifactId>templates-tooling-parent-pom</artifactId>
-		<version>1.1.6</version>
+		<version>1.1.9</version>
 	</parent>
 
 	<artifactId>template-sfdc2wday-user-bidirectional-sync</artifactId>
@@ -15,7 +15,7 @@
 	<name>template-sfdc2wday-user-bidirectional-sync Anypoint Template Project</name>
 
 	<properties>
-        <wday.int.version>4.2.0</wday.int.version>
+        <wday.int.version>4.1.0</wday.int.version>
 	</properties>
 
 	<build>
@@ -39,6 +39,13 @@
                             <artifactId>mule-module-workday-humanresources</artifactId>
                         </inclusion>
                     </inclusions>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<argLine>-Xmx1024m -XX:MaxPermSize=768m</argLine>
 				</configuration>
 			</plugin>
 		</plugins>

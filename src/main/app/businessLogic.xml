@@ -15,7 +15,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
 http://www.mulesoft.org/schema/mule/wd-hr http://www.mulesoft.org/schema/mule/wd-hr/current/mule-wd-hr.xsd
 http://www.mulesoft.org/schema/mule/wd-staffing http://www.mulesoft.org/schema/mule/wd-staffing/current/mule-wd-staffing.xsd
-http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schema/mule/wd-integration/current/mule-wd-integration.xsd" version="EE-3.5.1">
+http://www.mulesoft.org/schema/mule/wd-integration http://www.mulesoft.org/schema/mule/wd-integration/current/mule-wd-integration.xsd" version="EE-3.6.1">
     <data-mapper:config name="User_To_EmployeePersonalInfoUpdateType" transformationGraphPath="user_to_employeepersonalinfoupdatetype.grf" doc:name="User_To_EmployeePersonalInfoUpdateType"/>
     <data-mapper:config name="User_To_HireEmployeeRequestType_1" transformationGraphPath="user_to_hireemployeerequesttype_1.grf" doc:name="User_To_HireEmployeeRequestType_1"/>
 	<data-mapper:config name="List_WorkerType__To_List_User1" transformationGraphPath="list_workertype__to_user.grf" doc:name="List_WorkerType__To_User"/>
@@ -72,7 +72,7 @@ payload = list;]]></expression-component>
                 </sfdc:upsert>
 
             </batch:step>
-            <batch:step name="updateContactInfoInWorkDayStep" accept-expression="recordVars['LastModifiedDate'] == null || (org.mule.templates.DateUtils.isAfter(payload['LastModifiedDate'], recordVars['LastModifiedDate'] is NullPayload ? null : recordVars['LastModifiedDate']) &amp;&amp; '${sfdc.integration.user.id}' != payload.get('LastModifiedById'))">
+            <batch:step name="updateContactInfoInWorkDayStep" accept-expression="recordVars['LastModifiedDate'] is NullPayload || (org.mule.templates.DateUtils.isAfter(payload['LastModifiedDate'], recordVars['LastModifiedDate'] is NullPayload ? null : recordVars['LastModifiedDate']) &amp;&amp; '${sfdc.integration.user.id}' != payload.get('LastModifiedById'))">
 
                 <data-mapper:transform config-ref="User_To_MaintainContactInformationForPersonEventRequestType" doc:name="User To MaintainContactInformationForPersonEventRequestType">
                     <data-mapper:input-arguments>

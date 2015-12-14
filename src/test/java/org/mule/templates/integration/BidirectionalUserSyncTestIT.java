@@ -50,8 +50,8 @@ public class BidirectionalUserSyncTestIT extends AbstractTemplateTestCase {
 	private static final String VAR_EMAIL = "Email";
 	private static String SFDC_PROFILE_ID;
 	private String TEMPLATE_PREFIX = "sfdc2wday-bidi-worker";
-	private final String EMAIL = "bwillis@gmailtest.com";
-	private final String EMAIL1 = "bwillisss@gmailtest.com"; 	// wday test user needs to have this email set in wday
+	private final String EMAIL = "sfdc2wday_user_bidir@test2.com";
+	private final String EMAIL1 = "sfdc2wday_user_bidir@test.com"; 	// wday test user needs to have this email set in wday
 	private Employee employee;
 	private static final String ANYPOINT_TEMPLATE_NAME = "userBiSync";
 	private static final String SALESFORCE_INBOUND_FLOW_NAME = "triggerSyncFromSalesforceFlow";
