@@ -80,6 +80,9 @@ There are a couple of things you should take into account before running this te
 + sfdc.securityToken `h0fcC2Y7dnuH7ELk9BhoW0xu`
 + sfdc.url `https://login.salesforce.com/services/Soap/u/32.0`
 + sfdc.integration.user.id `00520000003LtvGAAS`
+
+	**Note:** To find out the correct *sfdc.integration.user.id* value, please, refer to example project **Salesforce Data Retrieval** in [Anypoint Exchange](http://www.mulesoft.org/documentation/display/current/Anypoint+Exchange).
+
 + sfdc.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000).format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZone.getTimeZone('GMT'))]`
 + sfdc.profileId `00e200000015oKFAAY`
 
