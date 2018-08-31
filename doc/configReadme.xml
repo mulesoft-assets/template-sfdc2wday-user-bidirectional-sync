@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<configuration>
+	<placeholders>
+		<placeholder id="template_name">
+			Salesforce to Workday User Bidirectional Sync
+		</placeholder>
+	</placeholders>
+	<sections>
+		<section id="use_case">  
+			I want to have my users synchronized between Salesforce and Workday
+<![CDATA[
+### Template overview <a name="templateoverview"/>
+						
+Let's say we want to keep Salesforce synchronized with Workday. Then, the integration behavior can be summarized just with the following steps:
+
+1. Ask Salesforce:
+> *Which changes have there been since the last time I got in touch with you?*
+
+2. For each of the updates fetched in the previous step (1.), ask Workday:
+> *Does the update received from A should be applied?*
+
+3. If the answer for the previous question (2.) is *Yes*, then *upsert* (create or update depending each particular case) Workday with the belonging change
+
+4. Repeat previous steps (1. to 3.) the other way around (using Workday as source and Salesforce as the target)
+
+ Repeat *ad infinitum*:
+
+5. Ask Salesforce:
+> *Which changes have there been since the question I've made in the step 1.?*
+
+And so on...
+			  
+The question for recent changes since a certain moment is nothing but a [poll inbound](http://www.mulesoft.org/documentation/display/current/Poll+Reference) with a [watermark](http://blogs.mulesoft.org/data-synchronizing-made-easy-with-mule-watermarks/) defined.
+]]>
+		</section>
+		<section id="considerations">
+<![CDATA[ 
+Salesforce Customization: It is necessary to add a custom field ExtId (Text 255) to Salesforce User. For more information, please see [Salesforce - Create Custom Fields](https://help.salesforce.com/HTViewHelpDoc?id=adding_fields.htm).
+
+**Note:** This particular Anypoint Template illustrate the synchronization use case between SalesForce and a Workday.
+There are a couple of things you should take into account before running this template:
+
+1. **Users cannot be deleted in SalesForce:** For now, the only thing to do regarding users removal is disabling/deactivating them, but this won't make the username available for a new user.
+
+2. **Each user needs to be associated to a Profile:** SalesForce's profiles are what define the permissions the user will have for manipulating data and other users. Each SalesForce account has its own profiles. Check out the next section to define a map between Profile Ids (from the source account to the ones in the target account and the other way around).
+
+3. **Workers cannot be deleted in Workday:** They are only set as terminated employees.
+
+4. **Required Fields:** The following fields are required for synchronization at Salesforce instance: Street, City, State/Province, Zip/Postal Code, Country, Phone.			
+]]>
+		</section>
+		<section id="application_configuration">
+			<![CDATA[
+#### Properties to be used across all the environments
+
++ poll.frequencyMillis `10000`
++ poll.startDelayMillis `500`
+
+#### Properties to be used on the development environment
+
+#### Workday Connector configuration
++ wday.user `user@company`
++ wday.password `secret`
++ wday.endpoint=https://impl-cc.workday.com/ccx/service/company/Human_Resources/v23.1
++ wday.integration.user.id `72d1073ba8f51050e3c83a48d7a9ead6`
++ wday.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000)]`
+
++ wday.country `USA`
++ wday.state `USA-CA`
++ wday.organization`SUPERVISORY_ORGANIZATION-1-435`
++ wday.jobprofileId `39905`
++ wday.postalCode `90001`
++ wday.city `San Francisco`
++ wday.location `San_Francisco_Site`
++ wday.currency `USD`
+
+#### Salesforce Connector
++ sfdc.username `user@company.com`
++ sfdc.password `secret`
++ sfdc.securityToken `h0fcC2Y7dnuH7ELk9BhoW0xu`
++ sfdc.url `https://login.salesforce.com/services/Soap/u/32.0`
++ sfdc.integration.user.id `00520000003LtvGAAS`
+
+	**Note:** To find out the correct *sfdc.integration.user.id* value, please, refer to example project **Salesforce Data Retrieval** in [Anypoint Exchange](http://www.mulesoft.org/documentation/display/current/Anypoint+Exchange).
+
++ sfdc.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000).format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZone.getTimeZone('GMT'))]`
++ sfdc.profileId `00e200000015oKFAAY`
+
++ sfdc.localeSidKey=en_US
++ sfdc.languageLocaleKey=en_US
++ sfdc.timeZoneSidKey=America/New_York
++ sfdc.emailEncodingKey=ISO-8859-1
+			  ]]>
+		</section>
+		<section id="api_calls">
+			<![CDATA[
+Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint Template calls to the API can be calculated using the formula:
+
+***1 + X + X / 200***
+
+Being ***X*** the number of Users to be synchronized on each run. 
+
+The division by ***200*** is because, by default, Users are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
+
+For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
+]]>
+		</section>
+		<section id="default_endpoints_xml">
+		<![CDATA[
+This file should contain every inbound and outbound endpoint of your integration app. It is intended to contain the application API.
+In this particular template, this file contains a couple of poll inbound endpoints that query Salesforce and Workday for updates using watermark as mentioned before.
+]]>
+		</section>
+		<section id="default_business_logic_xml">
+		<![CDATA[
+This file holds the functional aspect of the template (points 2. to 4. described in the [template overview](#templateoverview)). Its main component is a [*Batch job*][8], and it includes *steps* for both executing the synchronization from Salesforce to Workday, and the other way around.
+]]>
+		</section>
+	</sections>		
+</configuration>
