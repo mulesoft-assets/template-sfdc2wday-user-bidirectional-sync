@@ -420,16 +420,16 @@ output application/java
         <batch:job jobName="fromWorkdaytoSalesforceBatch"
             doc:id="204892ae-0d97-4326-beae-310c8d52b7a6">
             <batch:process-records>
-                <batch:step
-                    name="forEachUserInWorkdayGetUserFromSalesforceStep"
-                    doc:id="89713774-362a-4e92-9bdc-41e31802bf38">
-					<salesforce:query-single doc:name="Query single" doc:id="b326e7f1-a059-433d-b8ee-2671e6366b2d" config-ref="Salesforce_Config" target="sfdcUser">
-						<salesforce:salesforce-query >SELECT Id, Email, LastModifiedDate FROM User WHERE (Email = '#[payload.getWorkerData().getPersonalData().getContactData().getEmailAddressData().get(0).getEmailAddress()]')</salesforce:salesforce-query>
-					</salesforce:query-single>
-                </batch:step>
-                <batch:step name="forEachUserToBeUpsertedInSalesforce"
-                    doc:id="78a74ab4-9b91-416d-985a-acda2ac377eb"
-                    acceptExpression="#[varssfdcUser.Id == null  or (payload.LastModifiedDateA &lt; payload.LastModifiedDate)]">
+				<batch:step name="ForEachUserInWorkdayGetIdInSalesforce" doc:id="853c39b4-b226-4a88-9655-649f159cff9a" >
+					<logger level="INFO" doc:name="Logger" doc:id="8b18044f-bedc-4a9d-8488-8dd725953835" message="email=#[payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data[-1].Email_Address]"/>
+					<salesforce:query doc:name="Query" doc:id="a3e7dab0-3e0d-4def-8c43-16513a93c36f" config-ref="Salesforce_Config" target="sfdcUser">
+						<salesforce:salesforce-query >SELECT Id, Email, LastModifiedDate FROM User WHERE (Email = '#[payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data[-1].Email_Address]')</salesforce:salesforce-query>
+					</salesforce:query>
+					<logger level="INFO" doc:name="Logger" doc:id="642a7651-3151-40cd-8bed-599169625631" message="sfdcUser=#[output application/json --- vars.sfdcUser]"/>
+				</batch:step>
+				<batch:step name="forEachUserToBeUpsertedInSalesforce"
+                    doc:id="78a74ab4-9b91-416d-985a-acda2ac377eb">
+					<logger level="INFO" doc:name="Logger" doc:id="e0f95981-f2d5-4c44-ba03-8cf085f4d247" message="wday user=#[output application/json --- payload]"/>
 					<ee:transform doc:name="Transform Message" doc:id="48f67adf-4b87-41b1-a29a-6e81b0b58aff" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
