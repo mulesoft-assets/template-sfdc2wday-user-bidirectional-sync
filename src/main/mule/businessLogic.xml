@@ -417,55 +417,68 @@ output application/java
         </batch:job>
     </flow>
     <flow name="fromWorkdaytoSalesforce" doc:id="8759532e-79b7-4789-990c-dc8e162bfd67">
-        <batch:job jobName="fromWorkdaytoSalesforceBatch"
+        <logger level="INFO" doc:name="Logger" doc:id="c9c88392-736e-4957-b937-0fa7b30ba462" message="payload=#[payload]"/>
+		<batch:job jobName="fromWorkdaytoSalesforceBatch"
             doc:id="204892ae-0d97-4326-beae-310c8d52b7a6">
             <batch:process-records>
 				<batch:step name="ForEachUserInWorkdayGetIdInSalesforce" doc:id="853c39b4-b226-4a88-9655-649f159cff9a" >
-					<logger level="INFO" doc:name="Logger" doc:id="8b18044f-bedc-4a9d-8488-8dd725953835" message="email=#[payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data[-1].Email_Address]"/>
+					<logger level="INFO" doc:name="Logger" doc:id="8b18044f-bedc-4a9d-8488-8dd725953835" message="payload=#[output application/json --- payload]"/>
 					<salesforce:query doc:name="Query" doc:id="a3e7dab0-3e0d-4def-8c43-16513a93c36f" config-ref="Salesforce_Config" target="sfdcUser">
-						<salesforce:salesforce-query >SELECT Id, Email, LastModifiedDate FROM User WHERE (Email = '#[payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data[-1].Email_Address]')</salesforce:salesforce-query>
+						<salesforce:salesforce-query >SELECT Id, Email, LastModifiedDate FROM User WHERE Email = ':email'</salesforce:salesforce-query>
+						<salesforce:parameters ><![CDATA[#[output applicaton/java
+---
+{
+	"email" : payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data.Email_Address
+}]]]></salesforce:parameters>
 					</salesforce:query>
 					<logger level="INFO" doc:name="Logger" doc:id="642a7651-3151-40cd-8bed-599169625631" message="sfdcUser=#[output application/json --- vars.sfdcUser]"/>
 				</batch:step>
 				<batch:step name="forEachUserToBeUpsertedInSalesforce"
                     doc:id="78a74ab4-9b91-416d-985a-acda2ac377eb">
-					<logger level="INFO" doc:name="Logger" doc:id="e0f95981-f2d5-4c44-ba03-8cf085f4d247" message="wday user=#[output application/json --- payload]"/>
+					<logger level="INFO" doc:name="Logger" doc:id="e0f95981-f2d5-4c44-ba03-8cf085f4d247" message="wday user=#[output application/json --- payload]" />
 					<ee:transform doc:name="Transform Message" doc:id="48f67adf-4b87-41b1-a29a-6e81b0b58aff" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
 {
-	FirstName: payload.workerData.personalData.nameData.preferredNameData.nameDetailData.firstName,
-	LastName: payload.workerData.personalData.nameData.preferredNameData.nameDetailData.lastName,
-	City: payload.workerData.personalData.contactData.addressData[-1].municipality,
-	PostalCode: payload.workerData.personalData.contactData.addressData[-1].postalCode,
-	State: payload.workerData.personalData.contactData.addressData[-1].countryRegionReference.ID[1].value,
-	Country: payload.workerData.personalData.contactData.addressData[-1].countryReference.ID[2].value,
-	Email: payload.workerData.personalData.contactData.emailAddressData[-1].emailAddress,
-	Street: payload.workerData.personalData.contactData.addressData[-1].addressLineData[-1].value,
-	Phone: payload.workerData.personalData.contactData.phoneData[-1].phoneNumber,
-	Extension: payload.workerData.personalData.contactData.phoneData[-1].phoneExtension,
+  FirstName: payload.Worker_Data.Personal_Data.Name_Data.Preferred_Name_Data.Name_Detail_Data.First_Name,
+	LastName: payload.Worker_Data.Personal_Data.Name_Data.Preferred_Name_Data.Name_Detail_Data.Last_Name,
+	City: payload.Worker_Data.Personal_Data.Contact_Data.Address_Data.Municipality,
+	PostalCode: payload.Worker_Data.Personal_Data.Contact_Data.Address_Data.Postal_Code,
+	State: payload.Worker_Data.Personal_Data.Contact_Data.Address_Data.Country_Region_Reference.ID,
+	Country: payload.Worker_Data.Personal_Data.Contact_Data.Address_Data.Country_Reference.ID,
+	Email: payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data.Email_Address,
+	Street: payload.Worker_Data.Personal_Data.Contact_Data.Address_Data.Address_Line_Data,
+	Phone: payload.Worker_Data.Personal_Data.Contact_Data.Phone_Data.Phone_Number,
+	(Extension: payload.Worker_Data.Personal_Data.Contact_Data.Phone_Data.Phone_Extension) if payload.Worker_Data.Personal_Data.Contact_Data.Phone_Data.Phone_Extension != null,
 	ProfileId: p('sfdc.profileId'),
-	(Id: vars.sfdcUser.Id) if vars.sfdcUser != null, 
+	(Id: vars.sfdcUser.Id[0]) if vars.sfdcUser != null, 
 	
 	// Each Username should be UNIQUE even between different sandboxes of a single instance 
  	// If you are trying this kick with one instance and multiple sandboxes, please make sure that the target username is not the same as the original as a duplicated username error will come up 
-	Username: if (payload.workerData.userAccountData != null and payload.workerData.userAccountData.userName != null) (payload.workerData.userAccountData.userName)  else payload.workerData.personalData.contactData.emailAddressData[-1].emailAddress ++ ".target",
-	
+	Username: if (payload.Worker_Data.User_Account_Data != null and payload.Worker_Data.User_Account_Data.User_Name != null) (payload.Worker_Data.User_Account_Data.User_Name)  else payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data.Email_Address ++ ".target"	,
 	TimeZoneSidKey: p('sfdc.timeZoneSidKey'),
-	LocaleSidKey: if (payload.workerData.userAccountData != null and payload.workerData.userAccountData.localeReference != null) payload.workerData.userAccountData.localeReference.ID[-1].value  else p('sfdc.localeSidKey'),
+	LocaleSidKey: if (payload.Worker_Data.User_Account_Data != null and payload.Worker_Data.User_Account_Data.Locale_Reference != null) payload.Worker_Data.User_Account_Data.Locale_Reference.ID  else p('sfdc.localeSidKey'),
 	EmailEncodingKey: p('sfdc.emailEncodingKey'),
-	LanguageLocaleKey: if (payload.workerData.userAccountData != null and payload.workerData.userAccountData.defaultDisplayLanguageReference != null) payload.workerData.userAccountData.defaultDisplayLanguageReference.ID[-1].value else p('sfdc.languageLocaleKey'),
-	CommunityNickname: "CN_" ++ payload.workerData.personalData.contactData.emailAddressData[-1].emailAddress,
+	LanguageLocaleKey: if (payload.Worker_Data.User_Account_Data != null and payload.Worker_Data.User_Account_Data.Default_Display_Language_Reference != null) payload.Worker_Data.User_Account_Data.Default_Display_Language_Reference.ID else p('sfdc.languageLocaleKey'),
+	(CommunityNickname: "CN_" ++ payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data.Email_Addresss) if payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data.Email_Addresss !=null,
  	
- 	ExtId__c: payload.workerReference.ID[1].value,
+ 	ExtId__c: payload.Worker_Reference.ID,
  	IsActive: true
 }]]></ee:set-payload>
 						</ee:message>
+						<ee:variables >
+						</ee:variables>
 					</ee:transform>
-					<salesforce:upsert type="User" doc:name="Upsert" doc:id="c45a5dd6-f7a2-4822-b61f-07f52b932ba5" config-ref="Salesforce_Config" externalIdFieldName="id"/>
+					<logger level="INFO" doc:name="Logger" doc:id="17bfdd68-dc49-4eee-a849-3375f8b7a82e" message="data for sfdc=#[output application/json --- payload]"/>
                 </batch:step>
+				<batch:step name="Batch_Step" doc:id="dd3d0da1-167e-48eb-a8d4-21d085501be6" >
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="b49d4316-bfa1-42cb-a456-e5ac3de2a860" size="${page.size}">
+						<logger level="INFO" doc:name="Logger" doc:id="e8726c82-ae21-46fe-8604-2b15f1362925" message="data for sfdc=#[payload]"/>
+						<salesforce:upsert-bulk type="User" doc:name="Upsert bulk" doc:id="697eea35-e3c4-4b53-8457-d98ac67b1539" config-ref="Salesforce_Config" externalIdFieldName="Id" />
+					</batch:aggregator>
+				</batch:step>
             </batch:process-records>
             <batch:on-complete>
                 <os:store key="syncState" doc:name="Set sync state to fromA"

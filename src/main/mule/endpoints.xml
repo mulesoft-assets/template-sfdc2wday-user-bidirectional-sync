@@ -140,7 +140,7 @@ ns ns0 urn:com.workday/bsvc
         ns0#Response_Group: {
             ns0#Include_Reference: true,
             ns0#Include_Personal_Information: true,
-			ns0#Include_Organizations: true,
+			ns0#Include_Organizations: false,
             ns0#Include_Transaction_Log_Data: true,
             ns0#Include_User_Account: true
         }
