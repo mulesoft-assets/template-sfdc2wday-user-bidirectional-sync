@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:workday="http://www.mulesoft.org/schema/mule/workday"
+    xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+    xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+    xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/workday/current/mule-workday.xsd">
+    <flow name="schedulerFlow" doc:id="aff4106d-d2f6-4366-940a-a380dcb1cf73">
+        <scheduler doc:name="Scheduler"
+            doc:id="b7921a7b-d505-4eaa-a71f-167a6e7cf0b8">
+            <scheduling-strategy>
+                <fixed-frequency frequency="${scheduler.frequency}"
+                    startDelay="${scheduler.startDelay}" />
+            </scheduling-strategy>
+        </scheduler>
+		<os:retrieve key="syncState" doc:name="Retrieve sync state"
+            objectStore="SchedulerStatus" target="syncState">
+            <os:default-value><![CDATA[fromSfdc]]></os:default-value>
+        </os:retrieve>
+        <choice doc:name="SyncState?" doc:id="b4703d83-780b-4e2d-bf5d-51b1566d66e2"
+            doc:name="SyncState?">
+            <when
+                expression="#[(vars.syncState != 'running' and vars.syncState == 'fromSfdc') or vars.syncState == null]">
+                <logger level="INFO" doc:name="running from A"
+                    doc:id="c9cd1c27-5978-4ad8-b87f-99da49944447"
+                    message="running from A" />
+                <os:store key="syncState" doc:name="Set sync state to running"
+                    doc:id="340ac5e0-764f-4164-aeaa-14e616987553"
+                    objectStore="SchedulerStatus">
+                    <os:value><![CDATA[running]]></os:value>
+                </os:store>
+                <flow-ref doc:name="querySfdcFlow"
+                    doc:id="b0c87553-d459-4f12-940c-0f8f19892266" name="querySfdcFlow" />
+                <flow-ref doc:name="fromSalesforcetoWorkday"
+                    doc:id="43633fd4-8ec3-4899-8a82-93b88f816122" name="fromSalesforcetoWorkday" />
+
+
+            </when>
+            <when
+                expression="#[vars.syncState != 'running' and vars.syncState == 'fromWday']">
+                <logger level="INFO" doc:name="running from B"
+                    doc:id="840599bf-2442-45d6-b66d-fbe11593bd60"
+                    message="running from B" />
+                <os:store key="syncState" doc:name="Set sync state to running"
+                    doc:id="5059b820-0895-4454-9e50-e686d0f07758"
+                    objectStore="SchedulerStatus">
+                    <os:value><![CDATA[running]]></os:value>
+                </os:store>
+                <flow-ref doc:name="queryWdayFlow"
+                    doc:id="121efa5b-33a7-4c76-aa72-3112507c4c0b" name="queryWdayFlow" />
+                <flow-ref doc:name="fromWorkdaytoSalesforce"
+                    doc:id="d8baf0c3-ace8-4d57-80c5-f7ea614d3946" name="fromWorkdaytoSalesforce" />
+
+
+            </when>
+            <otherwise>
+                <logger level="INFO" doc:name="Batch running"
+                    doc:id="bf955eec-4baf-4836-b7fd-7d77ff5ebcb1"
+                    message="Batch running" />
+            </otherwise>
+        </choice>
+        <error-handler>
+            <on-error-propagate enableNotifications="true"
+                logException="true" doc:name="On Error Propagate"
+                doc:id="488b507d-e26c-4c56-8759-8bb4f6645d71" type="ANY">
+                <flow-ref doc:name="errorHandlingFlow"
+                    doc:id="afdaf73c-0137-4d60-84f6-5c41234771a3" name="errorHandlingFlow" />
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+	<flow name="querySfdcFlow">
+        <os:retrieve key="watermark" objectStore="watermarkStoreSfdc"
+            target="lastQueryDateA" doc:name="Retrieve salesforceLastQueryDate">
+            <os:default-value><![CDATA[${sfdc.watermark.default.expression}]]></os:default-value>
+        </os:retrieve>
+		<salesforce:query doc:name="Query User" doc:id="5d446a3b-6e66-4473-a9a6-4431e608a247" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query >SELECT Id,Alias, Email, EmailEncodingKey, FirstName, LanguageLocaleKey, LastModifiedById, LastModifiedDate, LastName, LocaleSidKey, ProfileId, TimeZoneSidKey, Username,CommunityNickname,City,PostalCode,Country,State,Street,ExtId__c,Phone,Extension FROM User WHERE LastModifiedDate &gt; :salesforceLastQueryDate AND IsActive = true ORDER BY LastModifiedDate DESC LIMIT 100</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output applicaton/java
+---
+{
+	"salesforceLastQueryDate" : vars.salesforceLastQueryDate
+}]]]></salesforce:parameters>
+		</salesforce:query>
+        <os:store key="watermark" failOnNullValue="false"
+            objectStore="watermarkStoreSfdc" doc:name="Store lastQueryDateA">
+            <os:value><![CDATA[#[max(payload map $.LastModifiedDate)]]]></os:value>
+        </os:store>
+    </flow>
+    <flow name="queryWdayFlow">
+        <os:retrieve key="watermark" objectStore="watermarkStoreWday"
+            target="lastQueryDateWday" doc:name="Retrieve wdayLastQueryDate">
+            <os:default-value><![CDATA[${wday.watermark.default.expression}]]></os:default-value>
+        </os:retrieve>
+		<ee:transform doc:name="Prepare GetWorkersRequest" doc:id="5748fc1a-5d2a-4735-8a0c-145066a8ad53" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 urn:com.workday/bsvc
+---
+{
+    ns0#Get_Workers_Request: {
+        ns0#Request_Criteria: {
+            ns0#Transaction_Log_Criteria_Data: {
+                ns0#Transaction_Date_Range_Data: {
+                    ns0#Updated_From: vars.wdayLastQueryDate,
+                    ns0#Updated_Through: (now() - |PT6S|)
+                }
+            },
+            ns0#Exclude_Inactive_Workers: true,
+            ns0#Exclude_Employees: false,
+            ns0#Exclude_Contingent_Workers: false
+        },
+        ns0#Response_Group: {
+            ns0#Include_Reference: true,
+            ns0#Include_Personal_Information: true,
+			ns0#Include_Organizations: false,
+            ns0#Include_Transaction_Log_Data: true,
+            ns0#Include_User_Account: true
+        }
+    }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<workday:invoke service="Human_Resources" operation="Get_Workers" doc:name="Invoke" doc:id="eac3b323-07db-42b4-b3d0-1e18b9c28e06" config-ref="Workday_Config"/>
+		<os:store key="watermark" failOnNullValue="false" objectStore="watermarkStoreWday" doc:name="Store lastQueryDateWday">
+            <os:value><![CDATA[#[payload.body.Get_Workers_Response.Request_Criteria.Transaction_Log_Criteria_Data.Transaction_Date_Range_Data.Updated_Through]]]></os:value>
+        </os:store>
+		<ee:transform doc:name="Process data from Wday" doc:id="f5f9a31b-dd61-48a1-8098-d10423baf2c3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+if (payload.body.Get_Workers_Response.Response_Results.Total_Results>0) payload.body.Get_Workers_Response.Response_Data.*Worker else []]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+</mule>
+
+        

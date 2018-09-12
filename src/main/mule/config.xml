@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:workday="http://www.mulesoft.org/schema/mule/workday"
+    xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+    xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+    xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/workday/current/mule-workday.xsd">
+
+    <global-property doc:name="Global Property"
+        doc:id="2a7ba69a-4ac3-481c-a4e6-3aab587399bb" name="mule.env"
+        value="dev" />
+    <configuration-properties file="mule.${mule.env}.properties"
+        doc:name="Configuration properties" doc:id="46877740-aac5-4812-8728-4718689aa9ec" />
+    <configuration-properties file="common.properties"
+        doc:name="Configuration properties" doc:id="dffa4da7-cc5c-4ecb-922e-1115b4387354" />
+    <configuration-properties doc:name="Configuration properties"
+        doc:id="d185e6c2-8ca4-4217-928b-a845563af693" file="mule-artifact.properties" />
+    <os:object-store name="SchedulerStatus" doc:name="Object store"
+        doc:id="e9862648-2cb3-47db-a763-9275db0a1854" persistent="false" />
+    <os:object-store name="watermarkStoreSfdc" doc:name="Object store" />
+    <os:object-store name="watermarkStoreWday" doc:name="Object store" />
+    <salesforce:sfdc-config name="Salesforce_Config"
+        doc:name="Salesforce Config" doc:id="df342235-b76d-4578-a19f-f03f3676a39f">
+        <salesforce:basic-connection
+            username="${sfdc.username}" password="${sfdc.password}"
+            securityToken="${sfdc.securityToken}" />
+    </salesforce:sfdc-config>
+    <workday:config name="Workday_Config" doc:name="Workday Config"
+        doc:id="36ca7b8c-5919-4077-925b-20bcc4d14191">
+        <workday:basic-connection username="${wday.username}"
+            password="${wday.password}" tenantName="${wday.tenant}"
+            hostName="${wday.host}">
+            <workday:transport>
+                <workday:default-http-dispatcher-provider />
+            </workday:transport>
+        </workday:basic-connection>
+    </workday:config>
+
+</mule>
+
+        
