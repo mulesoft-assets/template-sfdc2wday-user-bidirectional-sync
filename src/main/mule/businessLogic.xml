@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:workday="http://www.mulesoft.org/schema/mule/workday"
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+    xmlns:workday="http://www.mulesoft.org/schema/mule/workday"
     xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
     xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-    xmlns="http://www.mulesoft.org/schema/mule/core"
-    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+    xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/workday/current/mule-workday.xsd
@@ -17,15 +18,17 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
         <batch:job jobName="fromSalesforcetoWorkdayBatch"
             doc:id="204892ae-0d97-4326-beae-310c8d52b7a6">
             <batch:process-records>
-				<batch:step
+                <batch:step
                     name="forEachUserInSalesforceGetUserFromWorkdayStep"
-                    doc:id="89713774-362a-4e92-9bdc-41e31802bf38" acceptExpression="#[payload.ExtId__c != null]">
-                    <logger level="INFO" doc:name="Query User in Workday"
-                        doc:id="a25e1781-64a2-4cfd-86d9-f7776e31eaa8" />
-					<set-variable value="#[payload]" doc:name="payload to sfdcUser" doc:id="ee6088c1-0406-4d2f-9183-a69c06ea3a8c" variableName="sfdcUser"/>
-					<ee:transform doc:name="Create GetWorkersRequest" doc:id="f4611b88-2b13-454f-ab5c-159df19efb6b">
-						<ee:message>
-							<ee:set-payload><![CDATA[%dw 2.0
+                    doc:id="89713774-362a-4e92-9bdc-41e31802bf38"
+                    acceptExpression="#[payload.ExtId__c != null]">
+                    <set-variable value="#[payload]"
+                        doc:name="payload to sfdcUser" doc:id="ee6088c1-0406-4d2f-9183-a69c06ea3a8c"
+                        variableName="sfdcUser" />
+                    <ee:transform doc:name="Create GetWorkersRequest"
+                        doc:id="f4611b88-2b13-454f-ab5c-159df19efb6b">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
 output application/xml
 ns ns0 urn:com.workday/bsvc
 ---
@@ -51,33 +54,41 @@ ns ns0 urn:com.workday/bsvc
 
 
 ]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-					<logger level="INFO" doc:name="Logger" doc:id="cc085c3e-ae0e-4841-bb3f-bb1eddeb8e1e" message="wday request=#[payload]"/>
-					<workday:invoke doc:name="Retrieve worker from Wday" doc:id="bd871afc-4a4f-4a59-92b8-64b805563709" config-ref="Workday_Config" service="Human_Resources" operation="Get_Workers"/>
-					<ee:transform doc:name="Check user is in Workday" doc:id="0f71109e-1389-4514-b3f1-b1649cb6660c" >
-						<ee:message >
-						</ee:message>
-						<ee:variables >
-							<ee:set-variable variableName="sfdcUser" ><![CDATA[%dw 2.0
+                        </ee:message>
+                    </ee:transform>
+                    <workday:invoke doc:name="Retrieve worker from Wday"
+                        doc:id="bd871afc-4a4f-4a59-92b8-64b805563709"
+                        config-ref="Workday_Config" service="Human_Resources"
+                        operation="Get_Workers" />
+                    <ee:transform doc:name="Check user is in Workday"
+                        doc:id="0f71109e-1389-4514-b3f1-b1649cb6660c">
+                        <ee:message>
+                        </ee:message>
+                        <ee:variables>
+                            <ee:set-variable
+                                variableName="sfdcUser"><![CDATA[%dw 2.0
 output application/java
 ---
 if ( payload != null) vars.sfdcUser else (vars.sfdcUser - 'ExtId__c')]]></ee:set-variable>
-						</ee:variables>
-					</ee:transform>
-					<ee:transform doc:name="sfdcUser to payload" doc:id="4c604cc6-d0ca-40b5-9cd3-027c829f9478" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
+                        </ee:variables>
+                    </ee:transform>
+                    <ee:transform doc:name="sfdcUser to payload"
+                        doc:id="4c604cc6-d0ca-40b5-9cd3-027c829f9478">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
 vars.sfdcUser]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
+                        </ee:message>
+                    </ee:transform>
                 </batch:step>
-				<batch:step name="GetLastModifiedDateInWorkday" doc:id="ea3182b8-3006-4139-8376-33394416b7e6" acceptExpression="#[payload.ExtId__c != null]">
-					<ee:transform doc:name="Transform Message" doc:id="6701e7c4-d19f-43c7-a675-58333d9d6a48" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
+                <batch:step name="GetLastModifiedDateInWorkday"
+                    doc:id="ea3182b8-3006-4139-8376-33394416b7e6"
+                    acceptExpression="#[payload.ExtId__c != null]">
+                    <ee:transform doc:name="Create GetWorkersRequest"
+                        doc:id="6701e7c4-d19f-43c7-a675-58333d9d6a48">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
 output application/xml
 ns ns0 urn:com.workday/bsvc
 ---
@@ -111,36 +122,46 @@ ns ns0 urn:com.workday/bsvc
 
 
 ]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-					<workday:invoke doc:name="Invoke" doc:id="0ff9d353-2874-4f48-9e80-3bab577bfb5c" config-ref="Workday_Config" service="Human_Resources" operation="Get_Workers"/>
-					<logger level="INFO" doc:name="Logger" doc:id="0d76105e-22a9-4cdf-8e43-7fa3cf1f7fcd" message="wday retVal(2)=#[output application/xml --- payload]"/>
-					<ee:transform doc:name="Get newest lastModifiedDate" doc:id="d85583dd-fac9-4754-ad0b-b9b38cd5cacc" >
-						<ee:message >
-						</ee:message>
-						<ee:variables >
-							<ee:set-variable variableName="lastModifiedDate" ><![CDATA[%dw 2.0
+                        </ee:message>
+                    </ee:transform>
+                    <workday:invoke doc:name="Invoke"
+                        doc:id="0ff9d353-2874-4f48-9e80-3bab577bfb5c"
+                        config-ref="Workday_Config" service="Human_Resources"
+                        operation="Get_Workers" />
+                    <ee:transform doc:name="Get newest lastModifiedDate"
+                        doc:id="d85583dd-fac9-4754-ad0b-b9b38cd5cacc">
+                        <ee:message>
+                        </ee:message>
+                        <ee:variables>
+                            <ee:set-variable
+                                variableName="lastModifiedDate"><![CDATA[%dw 2.0
 output application/java
 ---
 max(payload.body.Get_Workers_Response.Response_Data.Worker.Worker_Data.Transaction_Log_Entry_Data.*Transaction_Log_Entry.Transaction_Log_Data.Transaction_Entry_Moment )
 ]]></ee:set-variable>
-						</ee:variables>
-					</ee:transform>
-					<ee:transform doc:name="sfdcUser to payload" doc:id="7f9154ec-9794-4042-97ae-348d142b1061" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
+                        </ee:variables>
+                    </ee:transform>
+                    <ee:transform doc:name="sfdcUser to payload"
+                        doc:id="7f9154ec-9794-4042-97ae-348d142b1061">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
 vars.sfdcUser]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-				</batch:step>
-				<batch:step name="UpdateUserInWday" doc:id="9afe5dbf-ef1e-41b7-9340-9569d49dec98" acceptExpression="#[payload.ExtId__c != null]">
-					<ee:transform doc:name="Transform Message" doc:id="504512d2-262e-4594-afb9-e27ecef8d773" >
-						<ee:message >
-						</ee:message>
-						<ee:variables >
-							<ee:set-variable variableName="xmlForWday" ><![CDATA[%dw 2.0
+                        </ee:message>
+                    </ee:transform>
+                </batch:step>
+                <batch:step name="UpdateUserInWday"
+                    doc:id="9afe5dbf-ef1e-41b7-9340-9569d49dec98"
+                    acceptExpression="#[payload.ExtId__c != null and ((vars.lastModifiedDate == null) or (vars.sfdcUser.LastModifiedDate &gt; vars.lastModifiedDate and p('sfdc.integration.user.id') != vars.sfdcUser.LastModifiedById))]">
+                    <ee:transform
+                        doc:name="Create MaintainContactInformationRequest"
+                        doc:id="504512d2-262e-4594-afb9-e27ecef8d773">
+                        <ee:message>
+                        </ee:message>
+                        <ee:variables>
+                            <ee:set-variable
+                                variableName="xmlForWday"><![CDATA[%dw 2.0
 output application/xml
 fun lookupCountryISOCode(ISOCode) = {
 	code: if (ISOCode == 'US') 'USA' else p('wday.country')	
@@ -205,19 +226,23 @@ ns0#Maintain_Contact_Information_for_Person_Event_Request:
 		}
 	}
 }]]></ee:set-variable>
-						</ee:variables>
-					</ee:transform>
-					<logger level="INFO" doc:name="Logger" doc:id="03a27bf1-db38-478c-8cc5-ca3162a12ebd" message="xml for wday1=#[vars.xmlForWday]"/>
-					<workday:invoke doc:name="Invoke" doc:id="4b6c81a5-a5d9-40e3-93c4-0d50865a6428" config-ref="Workday_Config" service="Human_Resources" operation="Maintain_Contact_Information" target="wdayRetval_1">
-						<workday:message >
-							<workday:body ><![CDATA[#[vars.xmlForWday]]]></workday:body>
-						</workday:message>
-					</workday:invoke>
-					<ee:transform doc:name="Transform Message" doc:id="10b44ec1-32ad-4310-88ab-3d083a5b8b0f" >
-						<ee:message >
-						</ee:message>
-						<ee:variables >
-							<ee:set-variable variableName="xmlForWday" ><![CDATA[%dw 2.0
+                        </ee:variables>
+                    </ee:transform>
+                    <workday:invoke doc:name="Invoke"
+                        doc:id="4b6c81a5-a5d9-40e3-93c4-0d50865a6428"
+                        config-ref="Workday_Config" service="Human_Resources"
+                        operation="Maintain_Contact_Information" target="wdayRetval_1">
+                        <workday:message>
+                            <workday:body><![CDATA[#[vars.xmlForWday]]]></workday:body>
+                        </workday:message>
+                    </workday:invoke>
+                    <ee:transform doc:name="Prepare ChangePreferredNameRequest"
+                        doc:id="10b44ec1-32ad-4310-88ab-3d083a5b8b0f">
+                        <ee:message>
+                        </ee:message>
+                        <ee:variables>
+                            <ee:set-variable
+                                variableName="xmlForWday"><![CDATA[%dw 2.0
 output application/xml
 
 fun lookupCountryISOCode(ISOCode) = {
@@ -241,23 +266,30 @@ ns0#Change_Preferred_Name_Request:
 		}
 	}
 }]]></ee:set-variable>
-						</ee:variables>
-					</ee:transform>
-					<logger level="INFO" doc:name="Logger" doc:id="9288627a-be3e-47fd-83ab-35fd44e7d8ec" message="xml for wday2=#[vars.xmlForWday]"/>
-					<workday:invoke service="Human_Resources" doc:name="Invoke" doc:id="98f63863-9fbd-4a96-b4ab-2ab411f9d2f3" config-ref="Workday_Config" operation="Change_Preferred_Name" target="wdayRetval_2">
-						<workday:message >
-							<workday:body ><![CDATA[#[vars.xmlForWday]]]></workday:body>
-						</workday:message>
-					</workday:invoke>
-				</batch:step>
-				<batch:step name="InsertNewUserToWorkday" doc:id="0653dd1b-05e1-42f2-a73a-9ad178ceb0b3" acceptExpression="#[payload.ExtId__c == null]">
-					<logger level="INFO" doc:name="Logger" doc:id="fb955572-fee6-4800-8362-e8cb003c12a7" message="sfdc user for insert=#[payload]" />
-					<set-variable value="#[payload]" doc:name="payload to sfdcUser" doc:id="474a8f93-4ab8-41b0-a24b-b37e8502715e" variableName="sfdcUser" />
-					<ee:transform doc:name="Transform Message" doc:id="49a7dc98-30f1-486b-b782-8386af681bb4">
-						<ee:message>
-						</ee:message>
-						<ee:variables>
-							<ee:set-variable variableName="xmlForInsert"><![CDATA[%dw 2.0
+                        </ee:variables>
+                    </ee:transform>
+                    <workday:invoke service="Human_Resources"
+                        doc:name="Invoke" doc:id="98f63863-9fbd-4a96-b4ab-2ab411f9d2f3"
+                        config-ref="Workday_Config" operation="Change_Preferred_Name"
+                        target="wdayRetval_2">
+                        <workday:message>
+                            <workday:body><![CDATA[#[vars.xmlForWday]]]></workday:body>
+                        </workday:message>
+                    </workday:invoke>
+                </batch:step>
+                <batch:step name="InsertNewUserToWorkday"
+                    doc:id="0653dd1b-05e1-42f2-a73a-9ad178ceb0b3"
+                    acceptExpression="#[payload.ExtId__c == null]">
+                    <set-variable value="#[payload]"
+                        doc:name="payload to sfdcUser" doc:id="474a8f93-4ab8-41b0-a24b-b37e8502715e"
+                        variableName="sfdcUser" />
+                    <ee:transform doc:name="Prepare HireEmployeeRequest"
+                        doc:id="49a7dc98-30f1-486b-b782-8386af681bb4">
+                        <ee:message>
+                        </ee:message>
+                        <ee:variables>
+                            <ee:set-variable
+                                variableName="xmlForInsert"><![CDATA[%dw 2.0
 output application/xml
 fun lookupCountryISOCode(ISOCode) = {
     code: if (ISOCode == 'US') 'USA' else p('wday.country')    
@@ -380,18 +412,20 @@ ns0#Hire_Employee_Request:
 		}
 	}
 }]]></ee:set-variable>
-						</ee:variables>
-					</ee:transform>
-					<logger level="INFO" doc:name="Logger" doc:id="fbf6df15-e118-4466-a72b-66b15e274213" message="wday insert xml=#[vars.xmlForInsert]" />
-					<workday:invoke service="Staffing" operation="Hire_Employee" doc:name="Invoke" doc:id="c0f38125-16dd-4793-bf92-f4901eebffe7" config-ref="Workday_Config">
-						<workday:message>
-							<workday:body><![CDATA[#[vars.xmlForInsert]]]></workday:body>
-						</workday:message>
-					</workday:invoke>
-					<logger level="INFO" doc:name="Logger" doc:id="54b9ca91-dd00-4f01-9705-5c89d631bb88" message="wday retVal=#[output application/json --- payload]" />
-					<ee:transform doc:name="Transform Message" doc:id="583a944a-18e7-4cce-8c26-2c59d43f1b9a">
-						<ee:message>
-							<ee:set-payload><![CDATA[%dw 2.0
+                        </ee:variables>
+                    </ee:transform>
+                    <workday:invoke service="Staffing"
+                        operation="Hire_Employee" doc:name="Invoke"
+                        doc:id="c0f38125-16dd-4793-bf92-f4901eebffe7"
+                        config-ref="Workday_Config">
+                        <workday:message>
+                            <workday:body><![CDATA[#[vars.xmlForInsert]]]></workday:body>
+                        </workday:message>
+                    </workday:invoke>
+                    <ee:transform doc:name="Prepare data for update sfdc user"
+                        doc:id="583a944a-18e7-4cce-8c26-2c59d43f1b9a">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
 [vars.sfdcUser 
@@ -400,48 +434,63 @@ output application/java
 - 'type'
 ++ ExtId__c: payload.body.Hire_Employee_Event_Response.Employee_Reference[1]
 ]]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-					<logger level="INFO" doc:name="Logger" doc:id="ac5c9424-309d-4b34-808e-d9c863723dda" message="update sfdc payload=#[payload]" />
-					<salesforce:upsert type="User" doc:name="Upsert" doc:id="e41eda9c-04da-470f-ad18-10e5ba533339" config-ref="Salesforce_Config" externalIdFieldName="Id" />
-				</batch:step>
+                        </ee:message>
+                    </ee:transform>
+                    <salesforce:upsert type="User"
+                        doc:name="Upsert" doc:id="e41eda9c-04da-470f-ad18-10e5ba533339"
+                        config-ref="Salesforce_Config"
+                        externalIdFieldName="Id" />
+                </batch:step>
             </batch:process-records>
             <batch:on-complete>
-                <os:store key="syncState" doc:name="Set sync state to fromB"
+                <os:store key="syncState" doc:name="Set sync state to fromWday"
                     doc:id="f08de372-2fb9-4aef-80ca-f6da2241fc75"
                     objectStore="SchedulerStatus">
-                    <os:value><![CDATA[fromB]]></os:value>
+                    <os:value><![CDATA[fromWday]]></os:value>
                 </os:store>
             </batch:on-complete>
 
         </batch:job>
     </flow>
     <flow name="fromWorkdaytoSalesforce" doc:id="8759532e-79b7-4789-990c-dc8e162bfd67">
-        <logger level="INFO" doc:name="Logger" doc:id="c9c88392-736e-4957-b937-0fa7b30ba462" message="payload=#[payload]"/>
-		<batch:job jobName="fromWorkdaytoSalesforceBatch"
+        <batch:job jobName="fromWorkdaytoSalesforceBatch"
             doc:id="204892ae-0d97-4326-beae-310c8d52b7a6">
             <batch:process-records>
-				<batch:step name="ForEachUserInWorkdayGetIdInSalesforce" doc:id="853c39b4-b226-4a88-9655-649f159cff9a" >
-					<logger level="INFO" doc:name="Logger" doc:id="8b18044f-bedc-4a9d-8488-8dd725953835" message="payload=#[output application/json --- payload]"/>
-					<salesforce:query doc:name="Query" doc:id="a3e7dab0-3e0d-4def-8c43-16513a93c36f" config-ref="Salesforce_Config" target="sfdcUser">
-						<salesforce:salesforce-query >SELECT Id, Email, LastModifiedDate FROM User WHERE Email = ':email'</salesforce:salesforce-query>
-						<salesforce:parameters ><![CDATA[#[output applicaton/java
+                <batch:step name="ForEachUserInWorkdayGetLastModifiedDate"
+                    doc:id="2079fa7e-15f8-4ce7-865c-c953bb6e6dfc">
+                    <set-variable
+                        value="#[payload.Worker_Data.Transaction_Log_Entry_Data.*Transaction_Log_Entry.Transaction_Log_Data.Transaction_Entry_Moment[0]]"
+                        doc:name="wdayLastMOdifiedDate" doc:id="41654abb-8403-4ca7-b0e3-842fc0dde4ae"
+                        variableName="wdayLastMOdifiedDate" />
+                </batch:step>
+                <batch:step
+                    name="ForEachUserInWorkdayGetLastModifiedDateInSalesforce"
+                    doc:id="853c39b4-b226-4a88-9655-649f159cff9a">
+                    <salesforce:query
+                        doc:name="get LastModifiedDate and LastModifiedById"
+                        doc:id="a3e7dab0-3e0d-4def-8c43-16513a93c36f"
+                        config-ref="Salesforce_Config" target="sfdcUser">
+                        <salesforce:salesforce-query>SELECT Id, Email,
+                            LastModifiedDate, LastModifiedById FROM User
+                            WHERE Email = ':email'
+                        </salesforce:salesforce-query>
+                        <salesforce:parameters><![CDATA[#[output applicaton/java
 ---
 {
 	"email" : payload.Worker_Data.Personal_Data.Contact_Data.Email_Address_Data.Email_Address
 }]]]></salesforce:parameters>
-					</salesforce:query>
-					<logger level="INFO" doc:name="Logger" doc:id="642a7651-3151-40cd-8bed-599169625631" message="sfdcUser=#[output application/json --- vars.sfdcUser]"/>
-				</batch:step>
-				<batch:step name="forEachUserToBeUpsertedInSalesforce"
-                    doc:id="78a74ab4-9b91-416d-985a-acda2ac377eb">
-					<logger level="INFO" doc:name="Logger" doc:id="e0f95981-f2d5-4c44-ba03-8cf085f4d247" message="wday user=#[output application/json --- payload]" />
-					<ee:transform doc:name="Transform Message" doc:id="48f67adf-4b87-41b1-a29a-6e81b0b58aff" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
+                    </salesforce:query>
+                </batch:step>
+                <batch:step name="forEachUserToBeUpsertedInSalesforce"
+                    doc:id="78a74ab4-9b91-416d-985a-acda2ac377eb"
+                    acceptExpression="#[(vars.wdayLastMOdifiedDate == null or vars.sfdcUser.LastModifiedDate[0] ==null or vars.wdayLastMOdifiedDate &gt; vars.sfdcUser.LastModifiedDate[0]) and (vars.sfdcUser.LastModifiedById[0] == null or vars.sfdcUser.LastModifiedById[0] != p('wday.integration.user.id'))]">
+                    <ee:transform doc:name="Prepare data for sfdc upsert"
+                        doc:id="48f67adf-4b87-41b1-a29a-6e81b0b58aff">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
-{
+[{
   FirstName: payload.Worker_Data.Personal_Data.Name_Data.Preferred_Name_Data.Name_Detail_Data.First_Name,
 	LastName: payload.Worker_Data.Personal_Data.Name_Data.Preferred_Name_Data.Name_Detail_Data.Last_Name,
 	City: payload.Worker_Data.Personal_Data.Contact_Data.Address_Data.Municipality,
@@ -466,25 +515,22 @@ output application/java
  	
  	ExtId__c: payload.Worker_Reference.ID,
  	IsActive: true
-}]]></ee:set-payload>
-						</ee:message>
-						<ee:variables >
-						</ee:variables>
-					</ee:transform>
-					<logger level="INFO" doc:name="Logger" doc:id="17bfdd68-dc49-4eee-a849-3375f8b7a82e" message="data for sfdc=#[output application/json --- payload]"/>
+}]]]></ee:set-payload>
+                        </ee:message>
+                        <ee:variables>
+                        </ee:variables>
+                    </ee:transform>
+                    <salesforce:upsert type="User"
+                        doc:name="Upsert" doc:id="00a2af6c-62a8-4fb1-9852-1de4cb44a069"
+                        config-ref="Salesforce_Config"
+                        externalIdFieldName="Id" />
                 </batch:step>
-				<batch:step name="Batch_Step" doc:id="dd3d0da1-167e-48eb-a8d4-21d085501be6" >
-					<batch:aggregator doc:name="Batch Aggregator" doc:id="b49d4316-bfa1-42cb-a456-e5ac3de2a860" size="${page.size}">
-						<logger level="INFO" doc:name="Logger" doc:id="e8726c82-ae21-46fe-8604-2b15f1362925" message="data for sfdc=#[payload]"/>
-						<salesforce:upsert-bulk type="User" doc:name="Upsert bulk" doc:id="697eea35-e3c4-4b53-8457-d98ac67b1539" config-ref="Salesforce_Config" externalIdFieldName="Id" />
-					</batch:aggregator>
-				</batch:step>
             </batch:process-records>
             <batch:on-complete>
-                <os:store key="syncState" doc:name="Set sync state to fromA"
+                <os:store key="syncState" doc:name="Set sync state to fromSfdc"
                     doc:id="f08de372-2fb9-4aef-80ca-f6da2241fc75"
                     objectStore="SchedulerStatus">
-                    <os:value><![CDATA[fromA]]></os:value>
+                    <os:value><![CDATA[fromSfdc]]></os:value>
                 </os:store>
             </batch:on-complete>
 

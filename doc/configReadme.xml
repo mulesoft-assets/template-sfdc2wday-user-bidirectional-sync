@@ -30,7 +30,7 @@ Let's say we want to keep Salesforce synchronized with Workday. Then, the integr
 
 And so on...
 			  
-The question for recent changes since a certain moment is nothing but a [poll inbound](http://www.mulesoft.org/documentation/display/current/Poll+Reference) with a [watermark](http://blogs.mulesoft.org/data-synchronizing-made-easy-with-mule-watermarks/) defined.
+The question for recent changes since a certain moment is nothing but a [scheduler](https://docs.mulesoft.com/mule4-user-guide/v/4.1/scheduler-concept) with a [watermark](http://blogs.mulesoft.org/data-synchronizing-made-easy-with-mule-watermarks/) defined.
 ]]>
 		</section>
 		<section id="considerations">
@@ -53,21 +53,22 @@ There are a couple of things you should take into account before running this te
 			<![CDATA[
 #### Properties to be used across all the environments
 
-+ poll.frequencyMillis `10000`
-+ poll.startDelayMillis `500`
++ scheduler.frequency `10000`
++ scheduler.startDelay `500`
 
 #### Properties to be used on the development environment
 
 #### Workday Connector configuration
-+ wday.user `user@company`
++ wday.username `user@company`
++ wday.tenant `tenant`
 + wday.password `secret`
-+ wday.endpoint=https://impl-cc.workday.com/ccx/service/company/Human_Resources/v23.1
++ wday.host=https://impl-cc.workday.com/ccx/service/company/Human_Resources/v23.1
 + wday.integration.user.id `72d1073ba8f51050e3c83a48d7a9ead6`
-+ wday.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000)]`
++ wday.watermark.default.expression `2017-12-13T03:00:59Z`
 
 + wday.country `USA`
 + wday.state `USA-CA`
-+ wday.organization`SUPERVISORY_ORGANIZATION-1-435`
++ wday.organization `SUPERVISORY_ORGANIZATION-1-435`
 + wday.jobprofileId `39905`
 + wday.postalCode `90001`
 + wday.city `San Francisco`
@@ -78,18 +79,17 @@ There are a couple of things you should take into account before running this te
 + sfdc.username `user@company.com`
 + sfdc.password `secret`
 + sfdc.securityToken `h0fcC2Y7dnuH7ELk9BhoW0xu`
-+ sfdc.url `https://login.salesforce.com/services/Soap/u/32.0`
 + sfdc.integration.user.id `00520000003LtvGAAS`
 
 	**Note:** To find out the correct *sfdc.integration.user.id* value, please, refer to example project **Salesforce Data Retrieval** in [Anypoint Exchange](http://www.mulesoft.org/documentation/display/current/Anypoint+Exchange).
 
-+ sfdc.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000).format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZone.getTimeZone('GMT'))]`
++ sfdc.watermark.default.expression `2017-12-13T03:00:59Z`
 + sfdc.profileId `00e200000015oKFAAY`
 
-+ sfdc.localeSidKey=en_US
-+ sfdc.languageLocaleKey=en_US
-+ sfdc.timeZoneSidKey=America/New_York
-+ sfdc.emailEncodingKey=ISO-8859-1
++ sfdc.localeSidKey `en_US`
++ sfdc.languageLocaleKey `en_US`
++ sfdc.timeZoneSidKey `America/New_York`
++ sfdc.emailEncodingKey `ISO-8859-1`
 			  ]]>
 		</section>
 		<section id="api_calls">
@@ -100,18 +100,18 @@ Salesforce imposes limits on the number of API Calls that can be made. Therefore
 
 Being ***X*** the number of Users to be synchronized on each run. 
 
-The division by ***200*** is because, by default, Users are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
+The division by ***200*** is because, by default, Users are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every scheduler cycle.	
 
 For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
 ]]>
 		</section>
-		<section id="default_endpoints_xml">
+		<section id="endpoints.xml">
 		<![CDATA[
 This file should contain every inbound and outbound endpoint of your integration app. It is intended to contain the application API.
 In this particular template, this file contains a couple of poll inbound endpoints that query Salesforce and Workday for updates using watermark as mentioned before.
 ]]>
 		</section>
-		<section id="default_business_logic_xml">
+		<section id="businesslogic.xml">
 		<![CDATA[
 This file holds the functional aspect of the template (points 2. to 4. described in the [template overview](#templateoverview)). Its main component is a [*Batch job*][8], and it includes *steps* for both executing the synchronization from Salesforce to Workday, and the other way around.
 ]]>
