@@ -1,32 +1,14 @@
 
-# Anypoint Template: Salesforce to Workday User Bidirectional Sync
+# Anypoint Template: Salesforce to Workday User Bidirectional Sync	
 
-+ [License Agreement](#licenseagreement)
-+ [Use Case](#usecase)
-	* [Template overview](#templateoverview)
-+ [Considerations](#considerations)
-	* [Salesforce Considerations](#salesforceconsiderations)
-	* [Workday Considerations](#workdayconsiderations)
-+ [Run it!](#runit)
-	* [Running on premise](#runonopremise)
-	* [Running on Studio](#runonstudio)
-	* [Running on Mule ESB stand alone](#runonmuleesbstandalone)
-	* [Running on CloudHub](#runoncloudhub)
-	* [Deploying your Anypoint Template on CloudHub](#deployingyouranypointtemplateoncloudhub)
-	* [Properties to be configured (With examples)](#propertiestobeconfigured)
-+ [API Calls](#apicalls)
-+ [Customize It!](#customizeit)
-	* [config.xml](#configxml)
-	* [businessLogic.xml](#businesslogicxml)
-	* [endpoints.xml](#endpointsxml)
-	* [errorHandling.xml](#errorhandlingxml)
+<!-- Header (start) -->
 
+<!-- Header (end) -->
 
-# License Agreement <a name="licenseagreement"/>
-Note that using this template is subject to the conditions of this [License Agreement](AnypointTemplateLicense.pdf).
-Please review the terms of the license before downloading and using this template. In short, you are allowed to use the template for free with Mule ESB Enterprise Edition, CloudHub, or as a trial in Anypoint Studio.
-
-# Use Case <a name="usecase"/>
+# License Agreement
+This template is subject to the conditions of the <a href="https://s3.amazonaws.com/templates-examples/AnypointTemplateLicense.pdf">MuleSoft License Agreement</a>. Review the terms of the license before downloading and using this template. You can use this template for free with the Mule Enterprise Edition, CloudHub, or as a trial in Anypoint Studio. 
+# Use Case
+<!-- Use Case (start) -->
 I want to have my users synchronized between Salesforce and Workday
 
 ### Template overview <a name="templateoverview"/>
@@ -51,9 +33,14 @@ Let's say we want to keep Salesforce synchronized with Workday. Then, the integr
 And so on...
 			  
 The question for recent changes since a certain moment is nothing but a [scheduler](https://docs.mulesoft.com/mule4-user-guide/v/4.1/scheduler-concept) with a [watermark](http://blogs.mulesoft.org/data-synchronizing-made-easy-with-mule-watermarks/) defined.
+<!-- Use Case (end) -->
 
-# Considerations <a name="considerations"/>
+# Considerations
+<!-- Default Considerations (start) -->
 
+<!-- Default Considerations (end) -->
+
+<!-- Considerations (start) -->
 Salesforce Customization: It is necessary to add a custom field ExtId (Text 255) to Salesforce User. For more information, please see [Salesforce - Create Custom Fields](https://help.salesforce.com/HTViewHelpDoc?id=adding_fields.htm).
 
 **Note:** This particular Anypoint Template illustrate the synchronization use case between SalesForce and a Workday.
@@ -66,40 +53,31 @@ There are a couple of things you should take into account before running this te
 3. **Workers cannot be deleted in Workday:** They are only set as terminated employees.
 
 4. **Required Fields:** The following fields are required for synchronization at Salesforce instance: Street, City, State/Province, Zip/Postal Code, Country, Phone.
+<!-- Considerations (end) -->
 
 
 
-## Salesforce Considerations <a name="salesforceconsiderations"/>
+## Salesforce Considerations
 
-There may be a few things that you need to know regarding Salesforce, in order for this template to work.
+Here's what you need to know about Salesforce to get this template to work:
 
-In order to have this template working as expected, you should be aware of your own Salesforce field configuration.
+- Where can I check that the field configuration for my Salesforce instance is the right one? See: <a href="https://help.salesforce.com/HTViewHelpDoc?id=checking_field_accessibility_for_a_particular_field.htm&language=en_US">Salesforce: Checking Field Accessibility for a Particular Field</a>.
+- Can I modify the Field Access Settings? How? See: <a href="https://help.salesforce.com/HTViewHelpDoc?id=modifying_field_access_settings.htm&language=en_US">Salesforce: Modifying Field Access Settings</a>.
 
-### FAQ
+### As a Data Source
 
- - Where can I check that the field configuration for my Salesforce instance is the right one?
-
-    [Salesforce: Checking Field Accessibility for a Particular Field][1]
-
-- Can I modify the Field Access Settings? How?
-
-    [Salesforce: Modifying Field Access Settings][2]
-
-
-[1]: https://help.salesforce.com/HTViewHelpDoc?id=checking_field_accessibility_for_a_particular_field.htm&language=en_US
-[2]: https://help.salesforce.com/HTViewHelpDoc?id=modifying_field_access_settings.htm&language=en_US
-
-### As source of data
-
-If the user configured in the template for the source system does not have at least *read only* permissions for the fields that are fetched, then a *InvalidFieldFault* API fault will show up.
+If the user who configured the template for the source system does not have at least *read only* permissions for the fields that are fetched, then an *InvalidFieldFault* API fault displays.
 
 ```
-java.lang.RuntimeException: [InvalidFieldFault [ApiQueryFault [ApiFault  exceptionCode='INVALID_FIELD'
-exceptionMessage='
-Account.Phone, Account.Rating, Account.RecordTypeId, Account.ShippingCity
+java.lang.RuntimeException: [InvalidFieldFault [ApiQueryFault 
+[ApiFault  exceptionCode='INVALID_FIELD'
+exceptionMessage='Account.Phone, Account.Rating, Account.RecordTypeId, 
+Account.ShippingCity
 ^
 ERROR at Row:1:Column:486
-No such column 'RecordTypeId' on entity 'Account'. If you are attempting to use a custom field, be sure to append the '__c' after the custom field name. Please reference your WSDL or the describe call for the appropriate names.'
+No such column 'RecordTypeId' on entity 'Account'. If you are attempting to 
+use a custom field, be sure to append the '__c' after the custom field name. 
+Reference your WSDL or the describe call for the appropriate names.'
 ]
 row='1'
 column='486'
@@ -107,76 +85,88 @@ column='486'
 ]
 ```
 
-### As destination of data
+### As a Data Destination
 
-There are no particular considerations for this Anypoint Template regarding Salesforce as data destination.
-
-
-## Workday Considerations <a name="workdayconsiderations"/>
-
-### As source of data
-
-There are no particular considerations for this Anypoint Template regarding Workday as data origin.
-### As destination of data
-
-There are no particular considerations for this Anypoint Template regarding Workday as data destination.
+There are no considerations with using Salesforce as a data destination.
 
 
+## Workday Considerations
+
+### As a Data Source
+
+There are no considerations with using Workday as a data origin.
+### As a Data Destination
+
+There are no considerations with using Workday as a data destination.
 
 
 
 
-# Run it! <a name="runit"/>
-Simple steps to get Salesforce to Workday User Bidirectional Sync running.
 
 
-## Running on premise <a name="runonopremise"/>
-In this section we detail the way you should run your Anypoint Template on your computer.
+# Run it!
+Simple steps to get this template running.
+<!-- Run it (start) -->
+
+<!-- Run it (end) -->
+
+## Running On Premises
+In this section we help you run this template on your computer.
+<!-- Running on premise (start) -->
+
+<!-- Running on premise (end) -->
+
+### Where to Download Anypoint Studio and the Mule Runtime
+If you are new to Mule, download this software:
+
++ [Download Anypoint Studio](https://www.mulesoft.com/platform/studio)
++ [Download Mule runtime](https://www.mulesoft.com/lp/dl/mule-esb-enterprise)
+
+**Note:** Anypoint Studio requires JDK 8.
+<!-- Where to download (start) -->
+
+<!-- Where to download (end) -->
+
+### Importing a Template into Studio
+In Studio, click the Exchange X icon in the upper left of the taskbar, log in with your Anypoint Platform credentials, search for the template, and click Open.
+<!-- Importing into Studio (start) -->
+
+<!-- Importing into Studio (end) -->
+
+### Running on Studio
+After you import your template into Anypoint Studio, follow these steps to run it:
+
++ Locate the properties file `mule.dev.properties`, in src/main/resources.
++ Complete all the properties required as per the examples in the "Properties to Configure" section.
++ Right click the template project folder.
++ Hover your mouse over `Run as`.
++ Click `Mule Application (configure)`.
++ Inside the dialog, select Environment and set the variable `mule.env` to the value `dev`.
++ Click `Run`.
+<!-- Running on Studio (start) -->
+
+<!-- Running on Studio (end) -->
+
+### Running on Mule Standalone
+Update the properties in one of the property files, for example in mule.prod.properties, and run your app with a corresponding environment variable. In this example, use `mule.env=prod`. 
 
 
-### Where to Download Mule Studio and Mule ESB
-First thing to know if you are a newcomer to Mule is where to get the tools.
+## Running on CloudHub
+When creating your application in CloudHub, go to Runtime Manager > Manage Application > Properties to set the environment variables listed in "Properties to Configure" as well as the mule.env value.
+<!-- Running on Cloudhub (start) -->
 
-+ You can download Mule Studio from this [Location](http://www.mulesoft.com/platform/mule-studio)
-+ You can download Mule ESB from this [Location](http://www.mulesoft.com/platform/soa/mule-esb-open-source-esb)
+<!-- Running on Cloudhub (end) -->
 
+### Deploying a Template in CloudHub
+In Studio, right click your project name in Package Explorer and select Anypoint Platform > Deploy on CloudHub.
+<!-- Deploying on Cloudhub (start) -->
 
-### Importing an Anypoint Template into Studio
-Mule Studio offers several ways to import a project into the workspace, for instance: 
+<!-- Deploying on Cloudhub (end) -->
 
-+ Anypoint Studio Project from File System
-+ Packaged mule application (.jar)
-
-You can find a detailed description on how to do so in this [Documentation Page](http://www.mulesoft.org/documentation/display/current/Importing+and+Exporting+in+Studio).
-
-
-### Running on Studio <a name="runonstudio"/>
-Once you have imported you Anypoint Template into Anypoint Studio you need to follow these steps to run it:
-
-+ Locate the properties file `mule.dev.properties`, in src/main/resources
-+ Complete all the properties required as per the examples in the section [Properties to be configured](#propertiestobeconfigured)
-+ Once that is done, right click on you Anypoint Template project folder 
-+ Hover you mouse over `"Run as"`
-+ Click on  `"Mule Application (configure)"`
-+ Inside the dialog, select Environment and set the variable `"mule.env"` to the value `"dev"`
-+ Click `"Run"`
-
-
-### Running on Mule ESB stand alone <a name="runonmuleesbstandalone"/>
-Complete all properties in one of the property files, for example in [mule.prod.properties] (../master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`. 
-
-
-## Running on CloudHub <a name="runoncloudhub"/>
-While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**.
-
-
-### Deploying your Anypoint Template on CloudHub <a name="deployingyouranypointtemplateoncloudhub"/>
-Mule Studio provides you with really easy way to deploy your Template directly to CloudHub, for the specific steps to do so please check this [link](http://www.mulesoft.org/documentation/display/current/Deploying+Mule+Applications#DeployingMuleApplications-DeploytoCloudHub)
-
-
-## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
-In order to use this Mule Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
-### Application configuration
+## Properties to Configure
+To use this template, configure properties such as credentials, configurations, etc.) in the properties file or in CloudHub from Runtime Manager > Manage Application > Properties. The sections that follow list example values.
+### Application Configuration
+<!-- Application Configuration (start) -->
 #### Properties to be used across all the environments
 
 + scheduler.frequency `10000`
@@ -190,7 +180,7 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + wday.password `secret`
 + wday.host=https://impl-cc.workday.com/ccx/service/company/Human_Resources/v23.1
 + wday.integration.user.id `72d1073ba8f51050e3c83a48d7a9ead6`
-+ wday.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000)]`
++ wday.watermark.default.expression `2017-12-13T03:00:59Z`
 
 + wday.country `USA`
 + wday.state `USA-CA`
@@ -209,58 +199,70 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 
 	**Note:** To find out the correct *sfdc.integration.user.id* value, please, refer to example project **Salesforce Data Retrieval** in [Anypoint Exchange](http://www.mulesoft.org/documentation/display/current/Anypoint+Exchange).
 
-+ sfdc.watermark.default.expression `#[groovy: new Date(System.currentTimeMillis() - 10000).format("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZone.getTimeZone('GMT'))]`
++ sfdc.watermark.default.expression `2017-12-13T03:00:59Z`
 + sfdc.profileId `00e200000015oKFAAY`
 
 + sfdc.localeSidKey `en_US`
 + sfdc.languageLocaleKey `en_US`
 + sfdc.timeZoneSidKey `America/New_York`
 + sfdc.emailEncodingKey `ISO-8859-1`
+<!-- Application Configuration (end) -->
 
-# API Calls <a name="apicalls"/>
+# API Calls
+<!-- API Calls (start) -->
 Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint Template calls to the API can be calculated using the formula:
 
 ***1 + X + X / 200***
 
 Being ***X*** the number of Users to be synchronized on each run. 
 
-The division by ***200*** is because, by default, Users are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
+The division by ***200*** is because, by default, Users are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every scheduler cycle.	
 
 For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
+<!-- API Calls (end) -->
 
+# Customize It!
+This brief guide provides a high level understanding of how this template is built and how you can change it according to your needs. As Mule applications are based on XML files, this page describes the XML files used with this template. More files are available such as test classes and Mule application files, but to keep it simple, we focus on these XML files:
 
-# Customize It!<a name="customizeit"/>
-This brief guide intends to give a high level idea of how this Anypoint Template is built and how you can change it according to your needs.
-As mule applications are based on XML files, this page will be organized by describing all the XML that conform the Anypoint Template.
-Of course more files will be found such as Test Classes and [Mule Application Files](http://www.mulesoft.org/documentation/display/current/Application+Format), but to keep it simple we will focus on the XMLs.
+* config.xml
+* businessLogic.xml
+* endpoints.xml
+* errorHandling.xml<!-- Customize it (start) -->
 
-Here is a list of the main XML files you'll find in this application:
+<!-- Customize it (end) -->
 
-* [config.xml](#configxml)
-* [endpoints.xml](#endpointsxml)
-* [businessLogic.xml](#businesslogicxml)
-* [errorHandling.xml](#errorhandlingxml)
+## config.xml
+<!-- Default Config XML (start) -->
+This file provides the configuration for connectors and configuration properties. Only change this file to make core changes to the connector processing logic. Otherwise, all parameters that can be modified should instead be in a properties file, which is the recommended place to make changes.<!-- Default Config XML (end) -->
 
+<!-- Config XML (start) -->
 
-## config.xml<a name="configxml"/>
-Configuration for Connectors and [Configuration Properties](http://www.mulesoft.org/documentation/display/current/Configuring+Properties) are set in this file. **Even you can change the configuration here, all parameters that can be modified here are in properties file, and this is the recommended place to do it so.** Of course if you want to do core changes to the logic you will probably need to modify this file.
+<!-- Config XML (end) -->
 
-In the visual editor they can be found on the *Global Element* tab.
+## businessLogic.xml
+<!-- Default Business Logic XML (start) -->
+The business logic XML file creates or updates objects in the destination system for a represented use case. You can customize and extend the logic of this template in this XML file to more meet your needs.<!-- Default Business Logic XML (end) -->
 
+<!-- Business Logic XML (start) -->
 
-## businessLogic.xml<a name="businesslogicxml"/>
-A functional aspect of this Anypoint Template implemented in this XML is to create or update objects in the destination system for a represented use case. You can customize and extend the logic of this Anypoint Template in this XML to more specifically meet your needs.
+<!-- Business Logic XML (end) -->
 
+## endpoints.xml
+<!-- Default Endpoints XML (start) -->
+This file contains the endpoints for triggering the template and for retrieving the objects that meet the defined criteria in a query. You can execute a batch job process with the query results.<!-- Default Endpoints XML (end) -->
 
+<!-- Endpoints XML (start) -->
 
-## endpoints.xml<a name="endpointsxml"/>
-This is file is conformed by a Flow containing the endpoints for triggering the template and retrieving the objects that meet the defined criteria in the query. And then executing the batch job process with the query results.
+<!-- Endpoints XML (end) -->
 
+## errorHandling.xml
+<!-- Default Error Handling XML (start) -->
+This file handles how your integration reacts depending on the different exceptions. This file provides error handling that is referenced by the main flow in the business logic.<!-- Default Error Handling XML (end) -->
 
+<!-- Error Handling XML (start) -->
 
-## errorHandling.xml<a name="errorhandlingxml"/>
-This is the right place to handle how your integration will react depending on the different exceptions. 
-This file holds a [Error Handling](http://www.mulesoft.org/documentation/display/current/Error+Handling) that is referenced by the main flow in the business logic.
+<!-- Error Handling XML (end) -->
 
+<!-- Extras (start) -->
 
-
+<!-- Extras (end) -->
