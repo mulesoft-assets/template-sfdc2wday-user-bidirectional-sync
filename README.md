@@ -43,7 +43,7 @@ The question for recent changes since a certain moment is nothing but a [schedul
 <!-- Considerations (start) -->
 Salesforce Customization: It is necessary to add a custom field ExtId (Text 255) to Salesforce User. For more information, please see [Salesforce - Create Custom Fields](https://help.salesforce.com/HTViewHelpDoc?id=adding_fields.htm).
 
-**Note:** This particular Anypoint Template illustrate the synchronization use case between SalesForce and a Workday.
+**Note:** This template illustrates the synchronization use case between SalesForce and a Workday.
 There are a couple of things you should take into account before running this template:
 
 1. **Users cannot be deleted in SalesForce:** For now, the only thing to do regarding users removal is disabling/deactivating them, but this won't make the username available for a new user.
@@ -210,7 +210,7 @@ To use this template, configure properties such as credentials, configurations, 
 
 # API Calls
 <!-- API Calls (start) -->
-Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint Template calls to the API can be calculated using the formula:
+Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The template calls to the API can be calculated using the formula:
 
 ***1 + X + X / 200***
 
