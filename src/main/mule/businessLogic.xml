@@ -462,7 +462,7 @@ output application/java
                 </batch:step>
                  <batch:step name="forEachUserToBeUpsertedInSalesforce"
                     doc:id="1cc6c315-4477-4845-ab13-70a198e603d0"
-                    acceptExpression="#[output application/java --- (vars.wdayLastMOdifiedDate == null or vars.sfdcUser.LastModifiedDate[0] ==null or vars.wdayLastMOdifiedDate &gt; vars.sfdcUser.LastModifiedDate[0]) and (vars.sfdcUser.LastModifiedById[0] == null or vars.sfdcUser.LastModifiedById[0] != p('wday.integration.user.id'))]">
+                    acceptExpression="#[ output application/java --- (vars.wdayLastModifiedDate == null or vars.sfdcUser.LastModifiedDate[0] ==null or vars.wdayLastModifiedDate &gt; vars.sfdcUser.LastModifiedDate[0]) and (vars.sfdcUser.LastModifiedById[0] == null or vars.sfdcUser.LastModifiedById[0] != p('wday.integration.user.id'))]">
            			<ee:transform doc:name="Prepare data for sfdc upsert"
                         doc:id="48f67adf-4b87-41b1-a29a-6e81b0b58aff">
                         <ee:message>

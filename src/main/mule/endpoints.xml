@@ -22,7 +22,7 @@ http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/
             objectStore="SchedulerStatus" target="syncState">
             <os:default-value><![CDATA[fromSfdc]]></os:default-value>
         </os:retrieve>
-		<choice doc:name="SyncStateee?" doc:id="53f0aed3-3f7a-43de-8e14-35c6949594a3">
+		<choice doc:name="SyncState?" doc:id="53f0aed3-3f7a-43de-8e14-35c6949594a3">
             <when
                 expression="#[(vars.syncState != 'running' and vars.syncState == 'fromSfdc') or vars.syncState == null]">
                 <logger level="INFO" doc:name="running from A"
