@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:workday="http://www.mulesoft.org/schema/mule/workday"
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/ee/core 
-  http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
-  http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/batch 
-  http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd 
-  http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd 
-  http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd 
+  xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/ee/core
+  http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+  http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/batch
+  http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+  http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+  http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
   http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/workday/current/mule-workday.xsd">
 
     <global-property name="mule.env" value="dev" doc:id="2a7ba69a-4ac3-481c-a4e6-3aab587399bb" doc:name="Global Property" />
@@ -19,7 +19,7 @@
         <salesforce:basic-connection password="${sfdc.password}" securityToken="${sfdc.securityToken}" username="${sfdc.username}" />
     </salesforce:sfdc-config>
     <workday:config-version-30-config name="Workday_Config_version_30" doc:name="Workday Config version 30" doc:id="d95037bc-6249-4878-bb0a-b3e8d35cb84d" >
-		<workday:basic-authentication-api-v30-connection username="${wday.username}" password="${wday.password}" tenantName="${wday.tenant}" hostName="${wday.host}" responseTimeout="25000"/>
+		<workday:basic-authentication-api-v30-connection username="${wday.username}" password="${wday.password}" tenantName="${wday.tenant}" hostName="${wday.host}" responseTimeout="${wday.responseTimeout}"/>
 	</workday:config-version-30-config>
 
 </mule>
