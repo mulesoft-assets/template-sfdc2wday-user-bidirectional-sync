@@ -36,7 +36,7 @@ http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/
                 <flow-ref doc:name="querySfdcFlow"
                     doc:id="7864e276-3a25-4ac8-95e2-4d2bc3b76d1e" name="querySfdcFlow" />
                 <flow-ref doc:name="fromSalesforcetoWorkday"
-                    doc:id="568d9c9a-2d22-4526-bf3c-b16fb1fea131" name="fromSalesforcetoWorkday" />
+                    doc:id="568d9c9a-2d22-4526-bf3c-b16fb1fea131" name="fromSalesforcetoWorkdayFlow" />
 
 
             </when>
@@ -53,7 +53,7 @@ http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/
                 <flow-ref doc:name="queryWdayFlow"
                     doc:id="f0ef2b73-b565-4cff-b543-207898655036" name="queryWdayFlow" />
                 <flow-ref doc:name="fromWorkdaytoSalesforce"
-                    doc:id="3d1b899d-85c5-4a22-8e9e-68b86bc77b54" name="fromWorkdaytoSalesforce" />
+                    doc:id="3d1b899d-85c5-4a22-8e9e-68b86bc77b54" name="fromWorkdaytoSalesforceFlow" />
 
 
             </when>

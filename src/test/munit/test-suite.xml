@@ -138,11 +138,11 @@ payload filter ($.Worker_Reference.ID == vars.wdayWorker.ID) map {
 }]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
-			<flow-ref doc:name="fromWorkdaytoSalesforce" doc:id="5437eb22-e8df-4de4-a135-b303f54c561e" name="fromWorkdaytoSalesforce"/>
+			<flow-ref doc:name="fromWorkdaytoSalesforce" doc:id="5437eb22-e8df-4de4-a135-b303f54c561e" name="fromWorkdaytoSalesforceFlow"/>
 			<scripting:execute engine="groovy" doc:id="521bfa08-24a7-4ae0-80da-a51e0e6f0a7d" doc:name="Sleep for 10s until the processing is completed" target="sleep">
 				<scripting:code>sleep(10000)</scripting:code>
 			</scripting:execute>
-			<flow-ref doc:name="checkSfdcUser" doc:id="176ab4db-0a15-476b-ac3c-4aa678abf9a2" name="checkSfdcUser"/>
+			<flow-ref doc:name="checkSfdcUser" doc:id="176ab4db-0a15-476b-ac3c-4aa678abf9a2" name="checkSfdcUserSubFlow"/>
 			<flow-ref doc:name="querySfdcFlow" doc:id="2c09d456-0bc1-4e1f-b603-98ae5c84878d" name="querySfdcFlow"/>
 			<ee:transform doc:name="Filter testing data" doc:id="63c80e34-35ee-47ec-b2d2-c0017d303d21" >
 				<ee:message >
@@ -176,11 +176,12 @@ payload filter ($.Email == vars.testSfdcUser.Email) map {
 }]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
-			<flow-ref doc:name="fromSalesforcetoWorkday" doc:id="e6ddb0e1-22c8-4903-bdcb-819fbebbe280" name="fromSalesforcetoWorkday"/>
+			<flow-ref doc:name="fromSalesforcetoWorkday" doc:id="e6ddb0e1-22c8-4903-bdcb-819fbebbe280" name="fromSalesforcetoWorkdayFlow"/>
 			<scripting:execute engine="groovy" doc:id="8818aaea-babf-4897-be6c-a47134bb694e" doc:name="Sleep for 40s until the processing is completed" target="sleep">
 				<scripting:code>sleep(40000)</scripting:code>
 			</scripting:execute>
-			<flow-ref doc:name="checkWorkdayUser" doc:id="16ddb6ea-d575-464b-95cc-6b14aebd370d" name="checkWorkdayUser"/>
+			<flow-ref doc:name="checkWorkdayUser" doc:id="16ddb6ea-d575-464b-95cc-6b14aebd370d" name="checkWorkdayUserSubFlow"/>
+			<flow-ref doc:name="Reference to revertWorkerSubFlow" doc:id="6c589bf7-dede-4f28-9e84-9b4b6d84087f" name="revertWorkerSubFlow"/>
 		</munit:execution>
 		<munit:validation >
 			<munit-tools:assert-that doc:name="Assert FirstName of migrated user from Salesforce" doc:id="94144b8a-07ce-47d5-9702-beb709df6ae7" expression="#[vars.wdayWorker.FirstName]" is="#[MunitTools::equalTo(vars.migratedSfdcUser.FirstName)]" message="FirstName is not equal"/>
@@ -189,7 +190,7 @@ payload filter ($.Email == vars.testSfdcUser.Email) map {
 			<munit-tools:assert-that doc:name="Assert FirstName of migrated worker from Workday" doc:id="21cccd39-38a9-4210-aaab-7e1402b4eb42" expression="#[vars.testSfdcUser.FirstName]" is="#[MunitTools::equalTo(vars.migratedWdayWorker.FirstName)]" message="FirstName is not equal"/>
 		</munit:validation>
 	</munit:test>
-	<sub-flow name="checkSfdcUser" doc:id="8da0068a-9cbe-4961-99ff-bae20cf346bd" >
+	<sub-flow name="checkSfdcUserSubFlow" doc:id="8da0068a-9cbe-4961-99ff-bae20cf346bd" >
 		<salesforce:query doc:name="Get migrated User from Salesforce" doc:id="f6cbe065-e6e5-4d45-8eff-db84e422ed89" config-ref="Salesforce_Config" target="migratedSfdcUser" targetValue="#[payload[0]]">
 			<salesforce:salesforce-query >SELECT Email, FirstName, LastName, City, PostalCode FROM User WHERE Email=':email'</salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
@@ -199,75 +200,8 @@ payload filter ($.Email == vars.testSfdcUser.Email) map {
 }]]]></salesforce:parameters>
 		</salesforce:query>
 	</sub-flow>
-	<sub-flow name="checkWorkdayUser" doc:id="4f8c1c3d-3072-411c-9396-d362d586ee46" >
-		<ee:transform doc:name="Create GetWorkersRequest"
-                        doc:id="428c5077-b06f-474e-a67b-d1779b857a60">
-                        <ee:message>
-                            <ee:set-payload><![CDATA[%dw 2.0
-output application/xml
-ns ns0 urn:com.workday/bsvc
----
-{
-	ns0#Get_Workers_Request: {
-		ns0#Request_References : {
-			ns0#Worker_Reference: {
-            ns0#ID @(ns0#"type": "Employee_ID" ): p('wday.test.user.id')
-        }
-
-		},
-		ns0#Response_Group: {
-			ns0#Include_Employment_Information: true,
-			ns0#Include_Organizations: false,
-			ns0#Include_Personal_Information: true,
-			ns0#Include_Reference: true,
-			ns0#Include_Roles: true,
-			ns0#Include_Transaction_Log_Data : true,
-			ns0#Include_User_Account : true
-		}	
-	}
-}
-
-
-]]></ee:set-payload>
-                        </ee:message>
-                    </ee:transform>
-		<workday:human-resources operation="Get_Workers" doc:name="Get worker from Workday" doc:id="a9ab69e7-027b-4228-b74f-33082589c60c" config-ref="Workday_Config_version_30"/>
-		<ee:transform doc:name="Set migratedWdayWorker variable" doc:id="be111789-e9c0-4dc2-8881-b47b43ce1d06">
-                        <ee:message>
-                        </ee:message>
-                        <ee:variables>
-				<ee:set-variable variableName="migratedWdayWorker" ><![CDATA[%dw 2.0
-output application/java
-var firstName= payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Personal_Data.Name_Data.Preferred_Name_Data.Name_Detail_Data.First_Name
-var lastName= payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Personal_Data.Name_Data.Preferred_Name_Data.Name_Detail_Data.Last_Name
-var alias = firstName ++ lastName
-var contactData =  payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Personal_Data.Contact_Data
-
----
-{	
-  	FirstName: firstName,
-	LastName: lastName,
-	Alias: if (sizeOf(alias) > 7 ) alias[0 to 7] else alias,
-	City: contactData.Address_Data.Municipality,
-	PostalCode: contactData.Address_Data.Postal_Code,
-	State: contactData.Address_Data.Country_Region_Reference.ID,
-	Country: contactData.Address_Data.Country_Reference.ID,
-	Email: contactData.Email_Address_Data.Email_Address,
-	Street: contactData.Address_Data.Address_Line_Data,
-	Phone: contactData.Phone_Data.Phone_Number,
-	Username: contactData.Email_Address_Data.Email_Address ++ ".target",
-	ExtId__c: payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Worker_ID,
-	ID: payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Worker_ID
-}]]></ee:set-variable>
-                        </ee:variables>
-                    </ee:transform>    
-		
-	</sub-flow>
-	<munit:after-test name="test-suiteAfter_Test" description="After tests actions" doc:id="65bfbdac-891b-4138-86e5-d0dd5975dc4f" >
-		<salesforce:update doc:name="Revert user in SFDC" doc:id="28861cd5-704d-4446-b064-14c449c0bf17" config-ref="Salesforce_Config" type="User">
-			<salesforce:records ><![CDATA[#[[vars.testSfdcUser]]]]></salesforce:records>
-		</salesforce:update>
-			<ee:transform doc:name="Prepare query for reverting worker" doc:id="61fa159b-409b-4843-b5b2-7b23f1f24408">
+	<sub-flow name="revertWorkerSubFlow" doc:id="d9cda257-bab1-4fe5-9862-398bfe0fb24d" >
+		<ee:transform doc:name="Prepare query for reverting worker" doc:id="61fa159b-409b-4843-b5b2-7b23f1f24408">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/xml
@@ -357,6 +291,75 @@ ns0#Change_Preferred_Name_Request:
                     </ee:transform>
 		<workday:human-resources doc:name="Revert worker name" doc:id="e23a0a87-fec4-4ef5-9bd4-275d6f85e41d" config-ref="Workday_Config_version_30" operation="Change_Preferred_Name">
 					</workday:human-resources>
+	</sub-flow>
+	<sub-flow name="checkWorkdayUserSubFlow" doc:id="4f8c1c3d-3072-411c-9396-d362d586ee46" >
+		<ee:transform doc:name="Create GetWorkersRequest"
+                        doc:id="428c5077-b06f-474e-a67b-d1779b857a60">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 urn:com.workday/bsvc
+---
+{
+	ns0#Get_Workers_Request: {
+		ns0#Request_References : {
+			ns0#Worker_Reference: {
+            ns0#ID @(ns0#"type": "Employee_ID" ): p('wday.test.user.id')
+        }
+
+		},
+		ns0#Response_Group: {
+			ns0#Include_Employment_Information: true,
+			ns0#Include_Organizations: false,
+			ns0#Include_Personal_Information: true,
+			ns0#Include_Reference: true,
+			ns0#Include_Roles: true,
+			ns0#Include_Transaction_Log_Data : true,
+			ns0#Include_User_Account : true
+		}	
+	}
+}
+
+
+]]></ee:set-payload>
+                        </ee:message>
+                    </ee:transform>
+		<workday:human-resources operation="Get_Workers" doc:name="Get worker from Workday" doc:id="a9ab69e7-027b-4228-b74f-33082589c60c" config-ref="Workday_Config_version_30"/>
+		<ee:transform doc:name="Set migratedWdayWorker variable" doc:id="be111789-e9c0-4dc2-8881-b47b43ce1d06">
+                        <ee:message>
+                        </ee:message>
+                        <ee:variables>
+				<ee:set-variable variableName="migratedWdayWorker" ><![CDATA[%dw 2.0
+output application/java
+var firstName= payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Personal_Data.Name_Data.Preferred_Name_Data.Name_Detail_Data.First_Name
+var lastName= payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Personal_Data.Name_Data.Preferred_Name_Data.Name_Detail_Data.Last_Name
+var alias = firstName ++ lastName
+var contactData =  payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Personal_Data.Contact_Data
+
+---
+{	
+  	FirstName: firstName,
+	LastName: lastName,
+	Alias: if (sizeOf(alias) > 7 ) alias[0 to 7] else alias,
+	City: contactData.Address_Data.Municipality,
+	PostalCode: contactData.Address_Data.Postal_Code,
+	State: contactData.Address_Data.Country_Region_Reference.ID,
+	Country: contactData.Address_Data.Country_Reference.ID,
+	Email: contactData.Email_Address_Data.Email_Address,
+	Street: contactData.Address_Data.Address_Line_Data,
+	Phone: contactData.Phone_Data.Phone_Number,
+	Username: contactData.Email_Address_Data.Email_Address ++ ".target",
+	ExtId__c: payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Worker_ID,
+	ID: payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Worker_ID
+}]]></ee:set-variable>
+                        </ee:variables>
+                    </ee:transform>    
+		
+	</sub-flow>
+	<munit:after-test name="test-suiteAfter_Test" description="After tests actions" doc:id="65bfbdac-891b-4138-86e5-d0dd5975dc4f" >
+		<salesforce:update doc:name="Revert user in SFDC" doc:id="28861cd5-704d-4446-b064-14c449c0bf17" config-ref="Salesforce_Config" type="User">
+			<salesforce:records ><![CDATA[#[[vars.testSfdcUser]]]]></salesforce:records>
+		</salesforce:update>
                 
 	</munit:after-test>
 

@@ -14,7 +14,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/workday/current/mule-workday.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
 
-    <flow name="fromSalesforcetoWorkday" doc:id="8759532e-79b7-4789-990c-dc8e162bfd67">
+    <flow name="fromSalesforcetoWorkdayFlow" doc:id="8759532e-79b7-4789-990c-dc8e162bfd67">
         <batch:job jobName="fromSalesforcetoWorkdayBatch"
             doc:id="204892ae-0d97-4326-beae-310c8d52b7a6">
             <batch:process-records>
@@ -79,7 +79,7 @@ vars.sfdcUser]]></ee:set-payload>
                         </ee:message>
                     </ee:transform>
                 </batch:step>
-                <batch:step name="GetLastModifiedDateInWorkday"
+                <batch:step name="GetLastModifiedDateInWorkdayStep"
                     doc:id="ea3182b8-3006-4139-8376-33394416b7e6"
                     acceptExpression="#[payload.ExtId__c != null]">
                     <ee:transform doc:name="Create GetWorkersRequest"
@@ -145,7 +145,7 @@ vars.sfdcUser]]></ee:set-payload>
                         </ee:message>
                     </ee:transform>
                 </batch:step>
-                <batch:step name="UpdateUserInWday"
+                <batch:step name="UpdateUserInWdayStep"
                     doc:id="9afe5dbf-ef1e-41b7-9340-9569d49dec98"
                     acceptExpression="#[payload.ExtId__c != null and ((vars.lastModifiedDate == null) or (vars.sfdcUser.LastModifiedDate &gt; vars.lastModifiedDate and p('sfdc.integration.user.id') != vars.sfdcUser.LastModifiedById))]">
                     <ee:transform
@@ -261,7 +261,7 @@ ns0#Change_Preferred_Name_Request:
 						<workday:content ><![CDATA[#[vars.xmlForWday]]]></workday:content>
 					</workday:human-resources>
                 </batch:step>
-                <batch:step name="InsertNewUserToWorkday"
+                <batch:step name="InsertNewUserToWorkdayStep"
                     doc:id="0653dd1b-05e1-42f2-a73a-9ad178ceb0b3"
                     acceptExpression="#[payload.ExtId__c == null]">
                     <set-variable value="#[payload]"
@@ -431,11 +431,11 @@ output application/java
 
         </batch:job>
     </flow>
-    <flow name="fromWorkdaytoSalesforce" doc:id="8759532e-79b7-4789-990c-dc8e162bfd67">
+    <flow name="fromWorkdaytoSalesforceFlow" doc:id="8759532e-79b7-4789-990c-dc8e162bfd67">
         <batch:job jobName="fromWorkdaytoSalesforceBatch"
             doc:id="204892ae-0d97-4326-beae-310c8d52b7a6" blockSize="${page.size}">
             <batch:process-records>
-				<batch:step name="ForEachUserInWorkdayGetLastModifiedDate"
+				<batch:step name="ForEachUserInWorkdayGetLastModifiedDateStep"
                     doc:id="2079fa7e-15f8-4ce7-865c-c953bb6e6dfc">
 					<set-variable
                         value="#[payload.Worker_Data.Transaction_Log_Entry_Data.*Transaction_Log_Entry.Transaction_Log_Data.Transaction_Entry_Moment[0]]"
@@ -443,7 +443,7 @@ output application/java
                         variableName="wdayLastModifiedDate" />
                 </batch:step>
                 <batch:step
-                    name="ForEachUserInWorkdayGetLastModifiedDateInSalesforce"
+                    name="ForEachUserInWorkdayGetLastModifiedDateInSalesforceStep"
                     doc:id="853c39b4-b226-4a88-9655-649f159cff9a">
 					<salesforce:query
                         doc:name="get LastModifiedDate and LastModifiedById"
@@ -460,7 +460,7 @@ output application/java
 }]]]></salesforce:parameters>
                     </salesforce:query>
                 </batch:step>
-                 <batch:step name="forEachUserToBeUpsertedInSalesforce"
+                 <batch:step name="forEachUserToBeUpsertedInSalesforceStep"
                     doc:id="1cc6c315-4477-4845-ab13-70a198e603d0"
                     acceptExpression="#[ output application/java --- (vars.wdayLastModifiedDate == null or vars.sfdcUser.LastModifiedDate[0] ==null or vars.wdayLastModifiedDate &gt; vars.sfdcUser.LastModifiedDate[0]) and (vars.sfdcUser.LastModifiedById[0] == null or vars.sfdcUser.LastModifiedById[0] != p('wday.integration.user.id'))]">
            			<ee:transform doc:name="Prepare data for sfdc upsert"
