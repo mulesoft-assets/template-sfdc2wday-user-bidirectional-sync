@@ -75,7 +75,7 @@ http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/
 	<flow name="querySfdcFlow">
         <os:retrieve key="watermark" objectStore="watermarkStoreSfdc"
             target="salesforceLastQueryDate" doc:name="Retrieve salesforceLastQueryDate">
-            <os:default-value ><![CDATA[#[read(p('watermark.default.expression'))]]]></os:default-value>
+            <os:default-value ><![CDATA[#[read(p('sfdc.watermark.default.expression'))]]]></os:default-value>
         </os:retrieve>
 		<salesforce:query doc:name="Query User" doc:id="f71a5796-24a2-40ed-9eee-bc37fa801102" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query >SELECT Id,Alias, Email, EmailEncodingKey, FirstName, LanguageLocaleKey, LastModifiedById, LastModifiedDate, LastName, LocaleSidKey, ProfileId, TimeZoneSidKey, Username,CommunityNickname,City,PostalCode,Country,State,Street,ExtId__c,Phone,Extension FROM User WHERE LastModifiedDate &gt; :salesforceLastQueryDate AND IsActive = true ORDER BY LastModifiedDate DESC LIMIT 100</salesforce:salesforce-query>
@@ -93,7 +93,7 @@ http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/
     <flow name="queryWdayFlow">
         <os:retrieve key="watermark" objectStore="watermarkStoreWday"
             target="wdayLastQueryDate" doc:name="Retrieve wdayLastQueryDate">
-            <os:default-value ><![CDATA[#[read(p('watermark.default.expression'))]]]></os:default-value>
+            <os:default-value ><![CDATA[#[read(p('wday.watermark.default.expression'))]]]></os:default-value>
         </os:retrieve>
 		<ee:transform doc:name="Prepare GetWorkersRequest" doc:id="16c350d4-3cb1-4f87-aa8b-7ab042a9ef0c" >
 			<ee:message >
