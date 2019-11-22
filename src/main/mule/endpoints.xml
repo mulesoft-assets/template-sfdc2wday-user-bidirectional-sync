@@ -126,7 +126,7 @@ ns ns0 urn:com.workday/bsvc
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<workday:human-resources operation="Get_Workers" doc:name="Get workers" doc:id="efef1b15-b996-47df-8541-c08187767fa7" config-ref="Workday_Config_version_30"/>
+		<workday:human-resources operation="Get_Workers" doc:name="Get workers" doc:id="efef1b15-b996-47df-8541-c08187767fa7" config-ref="Workday_Config"/>
 		<set-variable value="#[output application/java --- payload.Get_Workers_Response.Request_Criteria.Transaction_Log_Criteria_Data.Transaction_Date_Range_Data.Updated_Through]" doc:name="Set lastQueryDateWday variable" doc:id="8d084427-1bc3-4031-a470-a04a5f1f0104" variableName="lastQueryDateWday"/>
 		<os:store key="watermark" failOnNullValue="false" objectStore="watermarkStoreWday" doc:name="Store lastQueryDateWday">
             <os:value><![CDATA[#[vars.lastQueryDateWday]]]></os:value>
