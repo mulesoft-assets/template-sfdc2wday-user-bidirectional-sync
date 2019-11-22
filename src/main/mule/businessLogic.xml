@@ -130,8 +130,9 @@ ns ns0 urn:com.workday/bsvc
                             <ee:set-variable
                                 variableName="lastModifiedDate"><![CDATA[%dw 2.0
 output application/java
+var transactionEntryMoments = payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Transaction_Log_Entry_Data.*Transaction_Log_Entry.Transaction_Log_Data.Transaction_Entry_Moment
 ---
-max(payload.Get_Workers_Response.Response_Data.Worker.Worker_Data.Transaction_Log_Entry_Data.*Transaction_Log_Entry.Transaction_Log_Data.Transaction_Entry_Moment )
+if (!isEmpty(transactionEntryMoments)) max(transactionEntryMoments) else null
 ]]></ee:set-variable>
                         </ee:variables>
                     </ee:transform>
